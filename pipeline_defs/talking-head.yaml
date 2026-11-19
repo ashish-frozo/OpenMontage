@@ -45,7 +45,9 @@ stages:
     produces:
       - brief
       - decision_log
-    tools_available: []
+    tools_available:
+      - rea_video_analyze
+      - rea_video_review
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -93,6 +95,10 @@ stages:
       - face_tracker     # face position analysis for reframing decisions
       - silence_cutter   # silence detection for jump cut planning
     tools_available:
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - animatic
       - frame_sampler
       - face_tracker
       - silence_cutter
@@ -120,6 +126,12 @@ stages:
       - audio_mixer      # audio prep
       - image_selector
     tools_available:
+      - stock_image_search
+      - stock_image_download
+      - rea_video_analyze
+      - rea_video_review
+      - transcriber
+      - media_transition
       - subtitle_gen
       - audio_mixer
       - image_selector
@@ -146,6 +158,9 @@ stages:
       - silence_cutter   # auto jump cuts on silent segments
       - video_trimmer    # speed control (0.5x–2x), cut, concat
     tools_available:
+      - animatic
+      - sound_design
+      - editor_package
       - silence_cutter
       - video_trimmer
     checkpoint_required: true
@@ -186,6 +201,10 @@ stages:
       - video_stitch     # multi-clip assembly with transitions
       - visual_qa        # frame extraction + quality validation
     tools_available:
+      - transcriber
+      - creator_quality
+      - sound_design
+      - editor_package
       - video_compose
       - audio_mixer
       - face_enhance
@@ -217,7 +236,8 @@ stages:
       - final_review
     produces:
       - publish_log
-    tools_available: []
+    tools_available:
+      - editor_package
     checkpoint_required: true
     human_approval_default: true
     review_focus:

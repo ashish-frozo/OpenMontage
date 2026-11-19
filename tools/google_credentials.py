@@ -13,6 +13,10 @@ surfaces as an actionable runtime error rather than a hard import failure.
 from __future__ import annotations
 
 import os
+import atexit
+import json
+import signal
+import tempfile
 from typing import Any
 
 # Broad scope that covers Cloud Text-to-Speech and Vertex AI prediction.
@@ -29,9 +33,85 @@ def resolve_google_location(location: str | None = None) -> str:
 GOOGLE_API_TIMEOUT_SECONDS = 600
 GOOGLE_API_TIMEOUT_MS = GOOGLE_API_TIMEOUT_SECONDS * 1000
 
+_INLINE_CREDENTIAL_DIRECTORY: str | None = None
+_INLINE_CREDENTIAL_PATH: str | None = None
+_INLINE_CREDENTIAL_PREVIOUS_PATH: str | None = None
+_INLINE_CREDENTIAL_PREVIOUS_SIGTERM: Any = None
+
+
+def _inline_service_account_info() -> dict[str, Any] | None:
+    raw = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    if not raw:
+        return None
+    try:
+        info = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(info, dict) or info.get("type") != "service_account":
+        return None
+    required = ("project_id", "private_key", "client_email", "token_uri")
+    if any(not isinstance(info.get(name), str) or not info[name].strip() for name in required):
+        return None
+    return info
+
+
+def _install_inline_service_account_file() -> str | None:
+    """Materialize an encrypted Studio credential privately inside this job worker."""
+    global _INLINE_CREDENTIAL_DIRECTORY, _INLINE_CREDENTIAL_PATH, _INLINE_CREDENTIAL_PREVIOUS_PATH
+    global _INLINE_CREDENTIAL_PREVIOUS_SIGTERM
+    if _INLINE_CREDENTIAL_PATH and os.path.isfile(_INLINE_CREDENTIAL_PATH):
+        return _INLINE_CREDENTIAL_PATH
+    info = _inline_service_account_info()
+    if info is None:
+        return None
+    directory = tempfile.mkdtemp(prefix="openmontage-google-")
+    os.chmod(directory, 0o700)
+    path = os.path.join(directory, "service-account.json")
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        json.dump(info, handle, separators=(",", ":"))
+    _INLINE_CREDENTIAL_DIRECTORY = directory
+    _INLINE_CREDENTIAL_PATH = path
+    _INLINE_CREDENTIAL_PREVIOUS_PATH = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
+
+    def cleanup() -> None:
+        global _INLINE_CREDENTIAL_DIRECTORY, _INLINE_CREDENTIAL_PATH
+        global _INLINE_CREDENTIAL_PREVIOUS_SIGTERM
+        if _INLINE_CREDENTIAL_PREVIOUS_PATH is None:
+            os.environ.pop("GOOGLE_APPLICATION_CREDENTIALS", None)
+        else:
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = _INLINE_CREDENTIAL_PREVIOUS_PATH
+        if _INLINE_CREDENTIAL_PATH:
+            try:
+                os.unlink(_INLINE_CREDENTIAL_PATH)
+            except FileNotFoundError:
+                pass
+        if _INLINE_CREDENTIAL_DIRECTORY:
+            try:
+                os.rmdir(_INLINE_CREDENTIAL_DIRECTORY)
+            except OSError:
+                pass
+        _INLINE_CREDENTIAL_DIRECTORY = None
+        _INLINE_CREDENTIAL_PATH = None
+        if _INLINE_CREDENTIAL_PREVIOUS_SIGTERM is not None:
+            signal.signal(signal.SIGTERM, _INLINE_CREDENTIAL_PREVIOUS_SIGTERM)
+            _INLINE_CREDENTIAL_PREVIOUS_SIGTERM = None
+
+    def cleanup_on_termination(signum: int, frame: Any) -> None:
+        cleanup()
+        raise SystemExit(128 + signum)
+
+    _INLINE_CREDENTIAL_PREVIOUS_SIGTERM = signal.getsignal(signal.SIGTERM)
+    signal.signal(signal.SIGTERM, cleanup_on_termination)
+    atexit.register(cleanup)
+    return path
+
 
 def service_account_configured() -> bool:
-    """True when GOOGLE_APPLICATION_CREDENTIALS points to an existing file."""
+    """True when a service-account key file or inline Studio secret is available."""
+    if _inline_service_account_info() is not None:
+        return True
     path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
     return bool(path and os.path.exists(path))
 
@@ -64,6 +144,9 @@ def get_genai_client(
     ) or os.environ.get("GOOGLE_GENAI_USE_ENTERPRISE", "").lower() in ("true", "1")
 
     if force_vertex or use_vertex or (not api_key and service_account_configured()):
+        inline_info = _inline_service_account_info()
+        if inline_info is not None:
+            _install_inline_service_account_file()
         kwargs = {
             "vertexai": True,
             "location": resolve_google_location(location),
@@ -85,11 +168,13 @@ def resolve_project_id(creds_project_id: str | None = None) -> str | None:
     Vertex AI needs an explicit project id; TTS does not. We prefer an explicit
     env override so users can target a project other than the key's own.
     """
+    info = _inline_service_account_info()
     return (
         os.environ.get("GOOGLE_CLOUD_PROJECT")
         or os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
         or os.environ.get("GCLOUD_PROJECT")
         or creds_project_id
+        or (info.get("project_id") if info else None)
     )
 
 
@@ -115,16 +200,19 @@ def get_access_token(scopes: list[str] | None = None) -> tuple[str, str | None]:
             "Install it with: pip install google-auth"
         ) from exc
 
+    inline_info = _inline_service_account_info()
     path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-    if not path or not os.path.exists(path):
+    if inline_info is None and (not path or not os.path.exists(path)):
         raise RuntimeError(
             "GOOGLE_APPLICATION_CREDENTIALS is not set or points to a missing "
             "file; cannot use service-account authentication."
         )
 
     try:
-        creds = service_account.Credentials.from_service_account_file(
-            path, scopes=scopes
+        creds = (
+            service_account.Credentials.from_service_account_info(inline_info, scopes=scopes)
+            if inline_info is not None
+            else service_account.Credentials.from_service_account_file(path, scopes=scopes)
         )
         creds.refresh(Request())
     except Exception as exc:  # noqa: BLE001 - re-raised as actionable message

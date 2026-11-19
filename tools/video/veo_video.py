@@ -41,7 +41,7 @@ class VeoVideo(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = []  # Fal API key aliases are declared below.
     install_instructions = (
         "Configure at least one backend API key:\n"
         "  - Direct Google backend: Configure Vertex AI service-account credentials.\n"
@@ -180,6 +180,9 @@ class VeoVideo(BaseTool):
     def _get_fal_api_key(self) -> str | None:
         """Retrieve the FAL API key from environment variables."""
         return os.environ.get("FAL_KEY") or os.environ.get("FAL_AI_API_KEY")
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"FAL_KEY"}, {"FAL_AI_API_KEY"}, {"GOOGLE_APPLICATION_CREDENTIALS_JSON"}]
 
     def get_status(self) -> ToolStatus:
         """Determine whether the tool is available based on configured credentials."""

@@ -32,7 +32,7 @@ class OpenAITTS(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = ["env:OPENAI_API_KEY"]
     install_instructions = (
         "Set the OPENAI_API_KEY environment variable:\n"
         "  export OPENAI_API_KEY=your_key_here\n"

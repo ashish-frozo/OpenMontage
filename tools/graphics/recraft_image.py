@@ -35,7 +35,7 @@ class RecraftImage(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = []  # fal.ai key aliases are alternative credential formats below.
     install_instructions = (
         "Set FAL_KEY to your fal.ai API key.\n"
         "  Get one at https://fal.ai/dashboard/keys"
@@ -105,6 +105,9 @@ class RecraftImage(BaseTool):
     idempotency_key_fields = ["prompt", "model", "style", "image_size"]
     side_effects = ["writes image file to output_path", "calls fal.ai API"]
     user_visible_verification = ["Inspect generated image for brand accuracy and text readability"]
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"FAL_KEY"}, {"FAL_AI_API_KEY"}]
 
     def _get_api_key(self) -> str | None:
         return os.environ.get("FAL_KEY") or os.environ.get("FAL_AI_API_KEY")

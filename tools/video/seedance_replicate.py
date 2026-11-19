@@ -41,7 +41,7 @@ class SeedanceReplicate(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = ["env:REPLICATE_API_TOKEN"]
     install_instructions = (
         "Set REPLICATE_API_TOKEN to your Replicate API token.\n"
         "  Get one at https://replicate.com/account/api-tokens"

@@ -53,33 +53,13 @@ direction each time. Write it down (a short `art-direction.md` in the project) a
 Ask yourself: *what visual metaphor belongs to this subject that I have not used before?* If the
 answer resembles a past piece, you haven't found the direction yet.
 
-### 1.5 Plan each scene as its own composition — no hero-component spine
-The most insidious form of templating sneaks back in at the *scene* level: pick one striking
-visual (a candle, a browser frame, a score ring), then re-use it every scene with different
-text underneath. The piece feels custom because the hero is custom — but every scene is
-mechanically the same composition. That's branded slides, not a film. **Don't do that.**
-
-The signature device named in your art-direction is meant to appear in **one or at most two
-beats** — typically the climactic moment — not as the visual scaffolding of every scene. It
-earns its weight by being scarce.
-
-For each scene in the plan, answer concretely *before* writing code:
-
-- **What is this scene's primary visual subject?** It must be *different* from the previous
-  scene's. A character. A diagram. A piece of evidence. A landscape. A typographic moment. The
-  signature device. A void. Each scene's primary subject is its job.
-- **Why does this beat exist?** What does it do for the story that no other beat does? If you
-  can collapse two scenes into one without losing meaning, you should.
-- **How does it differ visually from the scene before and after?** Different composition (rule
-  of thirds vs centered vs split). Different scale (intimate close vs wide field). Different
-  motion register (still vs busy). Different palette emphasis. Different type treatment.
-- **If you removed the signature device from this scene, would the scene still work?** If yes,
-  the signature device probably doesn't belong in this scene — it's there as filler. Cut it.
-
-The reviewer enforces this as a "scene_distinctness" check (see
-`skills/meta/reviewer.md` → Composition Authoring Mode Review): a recorded inventory of
-each scene's primary subject + first frame, and an explicit answer to "do any two scenes
-share their primary visual subject?" Yes ⇒ CRITICAL ⇒ re-plan.
+### 1.5 Give each shot a purpose while preserving continuity
+For each scene, record its primary subject, shot intent, new information or emotion,
+and relationship to the previous shot. Repeated characters, products, presenters,
+locations and brand motifs are permitted. Change framing, action or emphasis when
+it serves the story; do not force a new subject merely to create variety.
+Flag repeated treatment when it adds no meaning. Review this scene inventory with
+actual frames and record intentional recurring motifs.
 
 The corollary: the per-scene plan is a *first-class artifact*, not implied. Write it down
 (in `art-direction.md` or a sibling `scenes.md`) before authoring `Composition.tsx`.
@@ -153,13 +133,10 @@ Recurring mechanics that bite if you don't know them:
   Every timeline must be `gsap.timeline({ paused: true })` and registered as
   `window.__timelines["<composition-id>"]`. Use stable `id` attributes on clips and on
   GSAP targets — `nth-of-type` selectors are flaky at validate time.
-- **Captions vs on-screen text — pick one role, never both for the same content.** Decide
-  once per piece, before authoring: are captions adding meaning the spoken words can't carry
-  (a number, a name, a translation, a quote attribution), OR are they accessibility subtitles
-  echoing the narration? If your scene already displays a SerifLine that reads the script
-  verbatim, do NOT also emit an auto-caption with the same text — the doubled phrase looks
-  amateurish even when the rest of the scene is beautiful. Empty `captions=[]` in props, or
-  scope captions only to scenes where the on-screen text differs from what's being said.
+- **Accessibility captions and decorative headlines have different jobs.** Keep the
+  approved subtitle track when narration repeats a headline. Adjust headline
+  timing, placement or styling to reduce crowding; never delete accessibility
+  captions solely to avoid duplicated words.
 
 ### 5. Render through the runtime-appropriate bespoke path
 Bespoke compositions are **throwaway and project-local** — they never enter any shared registry.
@@ -276,3 +253,6 @@ verification).
 See also: `skills/meta/animation-runtime-selector.md` (runtime + library routing),
 `AGENT_GUIDE.md` → "Composition Authoring Mode", `/hyperframes` (the HF router and
 capability map).
+
+## Continuity and accessibility clarification
+Intentional recurring subjects and brand motifs are permitted. Evaluate whether framing, action, information, or emotion progresses; do not reject a sequence simply because the same product or presenter recurs. Preserve accessibility subtitles when headlines repeat narration; adjust decorative text instead. This clarification supersedes blanket subject-repetition or caption-dedup rules above.

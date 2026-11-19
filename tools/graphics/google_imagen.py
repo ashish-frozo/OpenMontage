@@ -64,7 +64,7 @@ class GoogleImagen(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []  # checked dynamically via env var
+    dependencies = []  # API-key names are alternative credential formats below.
     install_instructions = (
         "Auth option A — API key (AI Studio): set GOOGLE_API_KEY (or GEMINI_API_KEY).\n"
         "  Get one at https://aistudio.google.com/apikey\n"
@@ -187,6 +187,9 @@ class GoogleImagen(BaseTool):
 
         base = path.with_suffix("") if path.suffix else path
         return [base.parent / f"{base.name}_{idx + 1}{suffix}" for idx in range(count)]
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"GOOGLE_API_KEY"}, {"GEMINI_API_KEY"}, {"GOOGLE_APPLICATION_CREDENTIALS_JSON"}]
 
     def _get_api_key(self) -> str | None:
         return os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")

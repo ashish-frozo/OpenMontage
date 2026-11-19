@@ -1,0 +1,31 @@
+{
+  "name": "openmontage-motion-runtime",
+  "version": "1.0.0",
+  "description": "Pinned local deterministic motion recipe renderer",
+  "scripts": {
+    "build": "node build.mjs",
+    "health": "node health.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "dependencies": {
+    "@tsparticles/engine": "4.5.4",
+    "@tsparticles/slim": "4.5.4",
+    "buffer": "6.0.3",
+    "elkjs": "0.12.1",
+    "esbuild": "0.28.2",
+    "flubber": "0.4.2",
+    "gl-texture2d": "2.1.0",
+    "gl-transition": "2.1.0",
+    "gl-transitions": "3.2.0",
+    "lottie-web": "5.13.0",
+    "maplibre-gl": "6.18.0",
+    "matter-js": "0.20.0",
+    "playwright": "1.65.0",
+    "regl": "2.1.1",
+    "roughjs": "4.6.6",
+    "vega": "6.4.0"
+  },
+  "private": true
+}

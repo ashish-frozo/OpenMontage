@@ -116,3 +116,12 @@ pytest-of-*/
 
 # GFPGAN/facexlib download face-detection weights to ./gfpgan/weights at runtime
 gfpgan/
+
+# Generated motion bundle
+motion-runtime/dist/
+
+.venv-kokoro/
+.venv-chatterbox/
+
+# Supabase CLI local metadata
+supabase/.temp/

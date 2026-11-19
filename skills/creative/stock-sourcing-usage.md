@@ -5,6 +5,13 @@
 
 ## Available Stock Tools
 
+For new photograph workflows, prefer `stock_image_search` followed by
+`stock_image_download`. Read `.agents/skills/free-stock-images/SKILL.md`.
+Wikimedia Commons and Openverse need no API key; configured Pexels/Pixabay
+keys are also supported. Search returns candidates for visual selection;
+download returns credits, provenance and an asset-manifest entry. The older
+image tools below immediately download the first result.
+
 | Tool | Provider | Content | Cost | Rate Limit | Best For |
 |------|----------|---------|------|-----------|----------|
 | `pexels_image` | Pexels | Photos | Free | 200/hr | High-quality photography, diverse library |
@@ -88,8 +95,9 @@ Pexels uses a bare API key in the `Authorization` header (NOT `Bearer`). The too
 ### 4. Search Results Vary by Locale
 Pexels supports 28 locales. If searching for culturally specific content, set the locale parameter.
 
-### 5. Stock Images Are Deterministic
-Unlike AI generation, searching "ocean waves" twice returns the same results. If the first result isn't good enough, try different keywords — don't retry the same query.
+### 5. Search Results Can Change
+Provider indexes, ranking and availability change. Save provenance at download
+time and choose candidates deliberately; refine the query or paginate when needed.
 
 ### 6. Duration Filtering for Video
 Both stock video tools support `min_duration` and `max_duration` parameters. Use these to avoid downloading 30-second clips when you only need 4 seconds — it saves bandwidth and time.
@@ -107,11 +115,9 @@ Stock tools integrate exactly like generation tools. In the asset manifest:
     "source_tool": "pexels_image",
     "scene_id": "scene-3",
     "cost_usd": 0.00,
-    "metadata": {
-        "photographer": "Joey Farina",
-        "source_url": "https://www.pexels.com/photo/2014422/",
-        "license": "Pexels License (free, no attribution required)"
-    }
+    "original_url": "https://www.pexels.com/photo/2014422/",
+    "license": "Pexels License https://www.pexels.com/license/",
+    "generation_summary": "Photo by Joey Farina on Pexels; preserve source credits."
 }
 ```
 
@@ -121,7 +127,10 @@ The Edit Director and Compose Director treat stock assets identically to generat
 
 | Provider | Commercial Use | Attribution | Restrictions |
 |----------|---------------|-------------|-------------|
-| Pexels | Yes, free | Not required (appreciated) | Cannot sell unaltered; cannot imply endorsement |
+| Pexels | Yes, subject to terms | Preserve Pexels and photographer credits for API integration | Cannot sell unaltered; cannot imply endorsement |
 | Pixabay | Yes, free | Not required | Cannot sell unaltered; cannot create competing stock service |
 
-Both are safe for all OpenMontage use cases. No licensing fees, no per-use royalties, no attribution obligations.
+Free downloads still have licence restrictions. Check the source and applicable
+people/property/brand rights for each use. CC BY requires attribution; CC BY-SA
+also has share-alike obligations. Keep the downloaded credit/provenance sidecars
+and include required credits in the published deliverable.

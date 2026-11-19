@@ -47,7 +47,9 @@ stages:
     produces:
       - brief
       - decision_log
-    tools_available: []
+    tools_available:
+      - rea_video_analyze
+      - rea_video_review
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -68,8 +70,11 @@ stages:
       - script
     required_tools:
       - transcriber
+    optional_tools:
+      - argos_translate
     tools_available:
       - transcriber
+      - argos_translate
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -92,6 +97,10 @@ stages:
       - frame_sampler
       - scene_detect
     tools_available:
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - animatic
       - frame_sampler
       - scene_detect
     checkpoint_required: true
@@ -120,7 +129,15 @@ stages:
       - lip_sync
       - audio_enhance
     tools_available:
+      - stock_image_search
+      - stock_image_download
+      - rea_video_analyze
+      - rea_video_review
+      - transcriber
+      - media_transition
       - tts_selector
+      - kokoro_tts
+      - chatterbox_tts
       - subtitle_gen
       - lip_sync
       - audio_enhance
@@ -143,7 +160,10 @@ stages:
       - script
     produces:
       - edit_decisions
-    tools_available: []
+    tools_available:
+      - animatic
+      - sound_design
+      - editor_package
     checkpoint_required: true
     human_approval_default: false
     review_focus:
@@ -171,6 +191,10 @@ stages:
       - video_trimmer
       - audio_enhance
     tools_available:
+      - transcriber
+      - creator_quality
+      - sound_design
+      - editor_package
       - video_compose
       - audio_mixer
       - video_trimmer
@@ -195,7 +219,8 @@ stages:
       - script
     produces:
       - publish_log
-    tools_available: []
+    tools_available:
+      - editor_package
     checkpoint_required: true
     human_approval_default: true
     review_focus:

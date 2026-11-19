@@ -66,7 +66,14 @@ stages:
     skill: pipelines/animation/research-director
     produces:
       - research_brief
-    tools_available: []
+    tools_available:
+      - anime_project
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - research_search
+      - research_fetch
+      - research_collect
     checkpoint_required: false
     human_approval_default: false
     review_focus:
@@ -87,7 +94,7 @@ stages:
     produces:
       - proposal_packet
       - decision_log
-    tools_available: []
+    tools_available: [anime_project]
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -131,6 +138,7 @@ stages:
     optional_tools:
       - transcriber
     tools_available:
+      - anime_project
       - transcriber
     checkpoint_required: true
     human_approval_default: true
@@ -154,7 +162,12 @@ stages:
       - proposal_packet
     produces:
       - scene_plan
-    tools_available: []
+    tools_available:
+      - anime_project
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - animatic
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -177,6 +190,8 @@ stages:
       - asset_manifest
     optional_tools:
       - tts_selector
+      - kokoro_tts
+      - chatterbox_tts
       - image_selector
       - video_selector
       - math_animate
@@ -190,10 +205,24 @@ stages:
       - music_gen
       - fal_elevenlabs_music
     tools_available:
+      - anime_project
+      - anime_local
+      - anime_generate
+      - stock_image_search
+      - stock_image_download
+      - rea_video_analyze
+      - rea_video_review
+      - transcriber
+      - media_transition
+      - motion_scene
+      - rhubarb_lipsync
       - tts_selector
+      - kokoro_tts
+      - chatterbox_tts
       - image_selector
       - video_selector
       - math_animate
+      - lemo_render
       - diagram_gen
       - code_snippet
       - threejs_world
@@ -230,7 +259,13 @@ stages:
       - script
     produces:
       - edit_decisions
-    tools_available: []
+    tools_available:
+      - anime_project
+      - anime_local
+      - animatic
+      - sound_design
+      - editor_package
+      - timeline_export
     checkpoint_required: true
     human_approval_default: false
     review_focus:
@@ -258,6 +293,13 @@ stages:
     optional_tools:
       - video_stitch
     tools_available:
+      - anime_project
+      - anime_local
+      - composition_validator
+      - transcriber
+      - creator_quality
+      - sound_design
+      - editor_package
       - video_compose
       - hyperframes_compose
       - audio_mixer
@@ -287,7 +329,8 @@ stages:
       - script
     produces:
       - publish_log
-    tools_available: []
+    tools_available:
+      - editor_package
     checkpoint_required: true
     human_approval_default: true
     review_focus:

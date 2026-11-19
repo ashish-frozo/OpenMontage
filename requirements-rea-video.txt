@@ -1,0 +1,2 @@
+# Install into an isolated .venv-rea-video, not the main MCP environment.
+rea-video @ git+https://github.com/JuneYaooo/rea-video.git@a274f48ac8911c415c46c21f7b78026e1638f0ef

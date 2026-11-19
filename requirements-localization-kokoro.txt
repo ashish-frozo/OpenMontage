@@ -1,0 +1,10 @@
+# Install in .venv-kokoro, separately from the MCP server and Chatterbox.
+kokoro==0.9.4
+soundfile==0.14.0
+# Japanese and Mandarin G2P are optional: pip install 'misaki[ja,zh]==0.9.4'
+# Validated Apple Silicon runtime versions.
+torch==2.15.0
+transformers==5.23.0
+numpy==2.5.4
+misaki[en]==0.9.4
+spacy==3.8.18

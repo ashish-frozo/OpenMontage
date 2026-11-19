@@ -159,6 +159,12 @@ class GoogleTTS(BaseTool):
             or os.environ.get("GEMINI_API_KEY")
         )
 
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [
+            {"GOOGLE_TTS_API_KEY"}, {"GOOGLE_API_KEY"}, {"GEMINI_API_KEY"},
+            {"GOOGLE_APPLICATION_CREDENTIALS_JSON"},
+        ]
+
     def get_status(self) -> ToolStatus:
         # Available via either an API key or a service-account JSON. Both paths
         # are honoured by execute() — so this no longer over-reports.

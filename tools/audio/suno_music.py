@@ -37,7 +37,7 @@ class SunoMusic(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []  # checked dynamically via env var
+    dependencies = ["env:SUNO_API_KEY"]
     install_instructions = (
         "Set the SUNO_API_KEY environment variable:\n"
         "  export SUNO_API_KEY=your_key_here\n"

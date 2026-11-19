@@ -43,7 +43,7 @@ class SoraVideo(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = ["env:OPENAI_API_KEY"]
     install_instructions = (
         "Set OPENAI_API_KEY to your OpenAI API key with Sora API access.\n"
         "  pip install 'openai>=2.44.0'"

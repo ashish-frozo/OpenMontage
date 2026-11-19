@@ -131,6 +131,9 @@ class GoogleMusic(BaseTool):
 
         return has_google_credentials()
 
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"GEMINI_API_KEY"}, {"GOOGLE_API_KEY"}, {"GOOGLE_APPLICATION_CREDENTIALS_JSON"}]
+
     def get_status(self) -> ToolStatus:
         """Determine whether the tool is available based on configured credentials."""
         if self._get_google_credentials_status():

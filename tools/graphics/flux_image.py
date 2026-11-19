@@ -32,7 +32,7 @@ class FluxImage(BaseTool):
     determinism = Determinism.SEEDED
     runtime = ToolRuntime.API
 
-    dependencies = []  # checked dynamically via env var
+    dependencies = ["env:FAL_KEY"]
     install_instructions = (
         "Set FAL_KEY to your fal.ai API key.\n"
         "  Get one at https://fal.ai/dashboard/keys"

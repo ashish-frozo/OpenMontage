@@ -36,7 +36,7 @@ class OpenAIImage(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []  # checked dynamically
+    dependencies = ["env:OPENAI_API_KEY"]
     install_instructions = (
         "Set OPENAI_API_KEY to your OpenAI API key.\n  pip install openai"
     )

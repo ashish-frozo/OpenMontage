@@ -63,6 +63,13 @@ stages:
     produces:
       - research_brief
     tools_available:
+      - anime_project
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - research_search
+      - research_fetch
+      - research_collect
       - web_search
     checkpoint_required: true
     human_approval_default: false
@@ -85,7 +92,7 @@ stages:
     produces:
       - proposal_packet
       - decision_log
-    tools_available: []
+    tools_available: [anime_project]
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -122,6 +129,7 @@ stages:
       - transcriber
       - scene_detect
     tools_available:
+      - anime_project
       - transcriber
       - scene_detect
     checkpoint_required: true
@@ -146,6 +154,11 @@ stages:
       - frame_sampler
       - scene_detect
     tools_available:
+      - anime_project
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - animatic
       - frame_sampler
       - scene_detect
     checkpoint_required: true
@@ -181,6 +194,18 @@ stages:
       - freesound_music
       - music_gen
     tools_available:
+      - anime_project
+      - anime_local
+      - anime_generate
+      - stock_image_search
+      - stock_image_download
+      - rea_video_analyze
+      - rea_video_review
+      - transcriber
+      - tts_selector
+      - kokoro_tts
+      - chatterbox_tts
+      - media_transition
       - subtitle_gen
       - audio_enhance
       - image_selector
@@ -215,7 +240,12 @@ stages:
       - script
     produces:
       - edit_decisions
-    tools_available: []
+    tools_available:
+      - anime_project
+      - anime_local
+      - animatic
+      - sound_design
+      - editor_package
     checkpoint_required: true
     human_approval_default: false
     review_focus:
@@ -246,6 +276,12 @@ stages:
       - audio_enhance
       - bgm_montage_lite
     tools_available:
+      - anime_project
+      - anime_local
+      - transcriber
+      - creator_quality
+      - sound_design
+      - editor_package
       - video_compose
       - hyperframes_compose
       - audio_mixer
@@ -277,7 +313,8 @@ stages:
       - script
     produces:
       - publish_log
-    tools_available: []
+    tools_available:
+      - editor_package
     checkpoint_required: true
     human_approval_default: true
     review_focus:

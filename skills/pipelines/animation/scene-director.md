@@ -119,3 +119,15 @@ This stage gates on human approval (`human_approval_default: true`). After revie
 checkpoint with `status="awaiting_human"`, present the summary (the Backlot board renders
 the artifact), and **END YOUR TURN**. Do not start the next stage in the same response.
 Approval is per-gate — an earlier "go ahead" does not cover this gate.
+
+## Creator workflow contract
+Read `.agents/skills/creator-workflow/SKILL.md`. New scene plans use version 1.1,
+stable ids, shot_intent, narrative_role and declared continuity. Before costly
+assets, render and review a playable animatic with temporary approved audio.
+Record the animatic path and review in scene-plan metadata before requesting
+scene-plan approval. Use factory_revision_plan for timestamped changes and locks;
+reapprove revisions and regenerate only affected shots. At compose, run
+creator_quality, inspect all shot boundaries and listen to the soundtrack. Its
+report is evidence for final_review, not automatic creative approval. Preserve
+accessibility captions and intentional recurring subjects. For editor delivery,
+use editor_package with separate audio tracks and explicit unsupported effects.

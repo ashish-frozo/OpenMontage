@@ -34,7 +34,7 @@ class DoubaoTTS(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = ["env:DOUBAO_SPEECH_API_KEY"]
     install_instructions = (
         "Set DOUBAO_SPEECH_API_KEY to a Volcengine Doubao Speech API Key.\n"
         "Optional: set DOUBAO_SPEECH_VOICE_TYPE to the default speaker voice.\n"

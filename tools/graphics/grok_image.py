@@ -54,7 +54,7 @@ class GrokImage(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = ["env:XAI_API_KEY"]
     install_instructions = (
         "Set XAI_API_KEY to your xAI API key.\n"
         "  Get one from the xAI developer console"

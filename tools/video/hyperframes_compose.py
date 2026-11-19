@@ -71,6 +71,7 @@ class HyperFramesCompose(BaseTool):
     )
     agent_skills = [
         "hyperframes",
+        "hyperframes-core",
         "hyperframes-cli",
         "hyperframes-registry",
         "website-to-video",

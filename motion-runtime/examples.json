@@ -1,0 +1,15 @@
+{
+  "version": "1",
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "duration": 4,
+  "seed": 7,
+  "objects": [
+    {"id":"sketch","recipe":"sketch","x":40,"y":40,"width":350,"height":250,"label":"Seeded sketch"},
+    {"id":"morph","recipe":"morph","x":450,"y":40,"width":350,"height":250,"from_path":"M 20 20 L 200 20 L 200 200 L 20 200 Z","to_path":"M 100 20 L 200 200 L 20 200 Z"},
+    {"id":"chart","recipe":"chart","x":850,"y":40,"width":350,"height":250,"data":[{"label":"Before","value":4},{"label":"After","value":9}]},
+    {"id":"diagram","recipe":"diagram","x":40,"y":380,"width":500,"height":250,"nodes":[{"id":"input","label":"Scene JSON"},{"id":"output","label":"Rendered clip"}],"edges":[{"source":"input","target":"output"}]},
+    {"id":"physics","recipe":"physics","x":650,"y":380,"width":500,"height":250,"count":12}
+  ]
+}

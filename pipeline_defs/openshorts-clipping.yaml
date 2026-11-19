@@ -1,0 +1,37 @@
+name: openshorts-clipping
+version: "1.0"
+description: Self-hosted OpenShorts selects and renders clips in one asynchronous upstream job; the agent reviews the results before delivery.
+category: custom
+stability: beta
+default_checkpoint_policy: guided
+extensions:
+  custom_tools: false
+  custom_scripts: false
+stages:
+  - name: idea
+    skill: pipelines/openshorts-clipping/idea-director
+    produces: [brief]
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    success_criteria:
+      - Source, content rights, test size and backend model are explicitly recorded
+  - name: assets
+    skill: pipelines/openshorts-clipping/asset-director
+    required_artifacts_in: [brief]
+    produces: [asset_manifest]
+    tools_available:
+      - openshorts_process_video
+      - openshorts_get_job_status
+      - openshorts_list_clips
+      - openshorts_get_quota
+      - openshorts_add_subtitles
+      - openshorts_recut_clip
+      - creator_quality
+      - transcriber
+    checkpoint_required: true
+    human_approval_default: true
+    success_criteria:
+      - Upstream job completed; selected clips copied into project assets
+      - Clip metadata, provenance and technical/visual review recorded
+      - Review summary presented before delivery approval

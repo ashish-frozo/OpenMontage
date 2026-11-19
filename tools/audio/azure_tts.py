@@ -173,6 +173,12 @@ class AzureTTS(BaseTool):
     # Azure neural TTS Standard tier bills roughly $16 per 1M characters.
     COST_PER_CHAR = 16.0 / 1_000_000
 
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [
+            {"AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION"},
+            {"AZURE_SPEECH_KEY", "AZURE_TTS_ENDPOINT"},
+        ]
+
     def get_status(self) -> ToolStatus:
         if os.environ.get("AZURE_SPEECH_KEY") and (
             os.environ.get("AZURE_SPEECH_REGION") or os.environ.get("AZURE_TTS_ENDPOINT")

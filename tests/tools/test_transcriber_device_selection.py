@@ -13,7 +13,8 @@ def test_transcriber_uses_ctranslate2_cuda_without_torch(monkeypatch, tmp_path) 
     devices = []
 
     class FakeWhisperModel:
-        def __init__(self, model_size, *, device, compute_type):
+        def __init__(self, model_size, *, device, compute_type, local_files_only):
+            assert local_files_only is True
             devices.append((device, compute_type))
 
         def transcribe(self, *args, **kwargs):
@@ -46,7 +47,8 @@ def test_transcriber_falls_back_when_cuda_fails_during_iteration(monkeypatch, tm
     devices = []
 
     class FakeWhisperModel:
-        def __init__(self, model_size, *, device, compute_type):
+        def __init__(self, model_size, *, device, compute_type, local_files_only):
+            assert local_files_only is True
             self.device = device
             devices.append((device, compute_type))
 

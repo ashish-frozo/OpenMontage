@@ -1,0 +1,2 @@
+# Optional offline text/subtitle translation provider.
+argostranslate>=1.10

@@ -88,7 +88,7 @@ class RunwayVideo(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = []  # API key aliases are alternative credential formats below.
     install_instructions = (
         "Set RUNWAY_API_KEY to your Runway API secret.\n"
         "  Get one at https://dev.runwayml.com/"
@@ -211,6 +211,9 @@ class RunwayVideo(BaseTool):
     user_visible_verification = [
         "Watch generated clip for visual quality and motion coherence"
     ]
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"RUNWAY_API_KEY"}, {"RUNWAYML_API_SECRET"}]
 
     def get_status(self) -> ToolStatus:
         if os.environ.get("RUNWAY_API_KEY") or os.environ.get("RUNWAYML_API_SECRET"):

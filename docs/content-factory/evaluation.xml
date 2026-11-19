@@ -1,0 +1,12 @@
+<evaluation>
+  <qa_pair><question>Inspect the installed plugins, then inspect the Lemo rendering operation. Which native parameter selects the WebGL backend?</question><answer>webgl_backend</answer></qa_pair>
+  <qa_pair><question>Inspect the project configuration schema and Lemo rendering schema. Which configuration field prevents a scene from overriding a chosen render width?</question><answer>locked_params</answer></qa_pair>
+  <qa_pair><question>Inspect the animation pipeline and Lemo operation permissions. In which pipeline stage can Lemo render scene clips?</question><answer>assets</answer></qa_pair>
+  <qa_pair><question>Inspect the Lemo operation and its production instruction. Does it replace the final OpenMontage composition runtime or produce intermediate scene clips? Answer with the declared output artifact type.</question><answer>video_clip</answer></qa_pair>
+  <qa_pair><question>Inspect the project configuration and route schemas. Which routing mode requires a pinned operation for each planned stage?</question><answer>directed</answer></qa_pair>
+  <qa_pair><question>Inspect the plugin operation catalogue and the Lemo schema. What is the maximum number of workers allowed for one Lemo render?</question><answer>6</answer></qa_pair>
+  <qa_pair><question>Inspect the Lemo schema and its production instruction. Which mode checks whether text remains visible long enough to read?</question><answer>readcheck</answer></qa_pair>
+  <qa_pair><question>Inspect the configuration schema and the factory guide. Which field limits simultaneous jobs within one project?</question><answer>max_concurrent_jobs</answer></qa_pair>
+  <qa_pair><question>Inspect the animation manifest and canonical artifact schema list. What is the canonical artifact produced by the assets stage?</question><answer>asset_manifest</answer></qa_pair>
+  <qa_pair><question>Inspect the factory guide and configuration schema. Is max_job_estimate_usd a provider billing cap or an estimate threshold?</question><answer>estimate threshold</answer></qa_pair>
+</evaluation>

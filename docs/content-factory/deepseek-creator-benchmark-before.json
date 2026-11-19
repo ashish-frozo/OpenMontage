@@ -1,0 +1,640 @@
+{
+  "model_requested": "deepseek/deepseek-v4.1-flash-1017",
+  "scope": "10 synthetic shot-revision contract tasks; not visual quality or end-to-end production",
+  "passed": 8,
+  "total": 10,
+  "results": [
+    {
+      "case": "hook",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 8.203817041998263,
+          "usage": {
+            "prompt_tokens": 825,
+            "completion_tokens": 1941,
+            "total_tokens": 2766,
+            "cost": 0.00022386672,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.000226128,
+              "upstream_inference_prompt_cost": 1.65e-05,
+              "upstream_inference_completions_cost": 0.000209628
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 1615,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Change only s1 description to \\\"Open with the result\\\".\",\"set_fields\":{\"description\":\"Open with the result\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s2",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "background",
+      "passed": false,
+      "attempts": [
+        {
+          "elapsed_seconds": 3.735929959002533,
+          "usage": {
+            "prompt_tokens": 827,
+            "completion_tokens": 945,
+            "total_tokens": 1772,
+            "cost": 0.00011411928,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.000115272,
+              "upstream_inference_prompt_cost": 1.3212e-05,
+              "upstream_inference_completions_cost": 0.00010206
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 625,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"cream\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Set s2 metadata.background to cream while preserving voice and captions.\",\"set_fields\":{\"metadata.background\":\"cream\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]}}",
+          "error": "Preserve the supplied source plan and all locks"
+        },
+        {
+          "elapsed_seconds": 2.6739953749929555,
+          "usage": {
+            "prompt_tokens": 1164,
+            "completion_tokens": 423,
+            "total_tokens": 1587,
+            "cost": 5.509548e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 5.5652e-05,
+              "upstream_inference_prompt_cost": 9.968e-06,
+              "upstream_inference_completions_cost": 4.5684e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 101,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Set s2 metadata.background to cream; leave voice and captions untouched.\",\"set_fields\":{\"metadata.background\":\"cream\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]}}",
+          "error": "Additional properties are not allowed ('metadata.background' was unexpected)\n\nFailed validating 'additionalProperties' in schema['properties']['scenes']['items']:\n    {'type': 'object',\n     'required': ['id',\n                  'type',\n                  'description',\n                  'start_seconds',\n                  'end_seconds'],\n     'properties': {'id': {'type': 'string'},\n                    'type': {'type': 'string',\n                             'enum': ['talking_head',\n                                      'broll',\n                                      'animation',\n                                      'character_scene',\n                                      'diagram',\n                                      'text_card',\n                                      'transition',\n                                      'generated',\n                                      'screen_recording',\n                                      'anime_scene']},\n                    'description': {'type': 'string'},\n                    'start_seconds': {'type': 'number', 'minimum': 0},\n                    'end_seconds': {'type': 'number', 'minimum': 0},\n                    'script_section_id': {'type': 'string'},\n                    'framing': {'type': 'string'},\n                    'movement': {'type': 'string'},\n                    'transition_in': {'type': 'string'},\n                    'transition_out': {'type': 'string'},\n                    'overlay_notes': {'type': 'string'},\n             "
+        }
+      ]
+    },
+    {
+      "case": "shorten",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 4.358234375002212,
+          "usage": {
+            "prompt_tokens": 831,
+            "completion_tokens": 1071,
+            "total_tokens": 1902,
+            "cost": 0.0001276704,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.00012896,
+              "upstream_inference_prompt_cost": 1.3292e-05,
+              "upstream_inference_completions_cost": 0.000115668
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 668,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":1,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":1,\"end_seconds\":3,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":3,\"end_seconds\":5,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Shorten s1 to one second by setting end_seconds to 1.\",\"set_fields\":{\"end_seconds\":1}},{\"shot_id\":\"s2\",\"note\":\"Ripple s2 earlier by one second after shortening s1.\",\"set_fields\":{\"start_seconds\":1,\"end_seconds\":3}},{\"shot_id\":\"s3\",\"note\":\"Ripple s3 earlier by one second after shortening s1.\",\"set_fields\":{\"start_seconds\":3,\"end_seconds\":5}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":true}",
+          "error": "Preserve the supplied source plan and all locks"
+        },
+        {
+          "elapsed_seconds": 2.302569624996977,
+          "usage": {
+            "prompt_tokens": 1251,
+            "completion_tokens": 509,
+            "total_tokens": 1760,
+            "cost": 6.60132e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 6.668e-05,
+              "upstream_inference_prompt_cost": 1.1708e-05,
+              "upstream_inference_completions_cost": 5.4972e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 106,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Shorten s1 to one second by setting end_seconds to 1.\",\"set_fields\":{\"end_seconds\":1}},{\"shot_id\":\"s2\",\"note\":\"Ripple s2 earlier by one second after shortening s1.\",\"set_fields\":{\"start_seconds\":1,\"end_seconds\":3}},{\"shot_id\":\"s3\",\"note\":\"Ripple s3 earlier by one second after shortening s1.\",\"set_fields\":{\"start_seconds\":3,\"end_seconds\":5}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":true}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1"
+            ],
+            "retime_shot_ids": [
+              "s2",
+              "s3"
+            ],
+            "reuse_shot_ids": [
+              "s2",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "extend",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 3.4661385829967912,
+          "usage": {
+            "prompt_tokens": 831,
+            "completion_tokens": 770,
+            "total_tokens": 1601,
+            "cost": 9.548748e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 9.6452e-05,
+              "upstream_inference_prompt_cost": 1.3292e-05,
+              "upstream_inference_completions_cost": 8.316e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 395,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":5,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":5,\"end_seconds\":7,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Extend s2 to three seconds by setting end_seconds to 5.\",\"set_fields\":{\"end_seconds\":5}},{\"shot_id\":\"s3\",\"note\":\"Ripple s3 after s2 extension: shift start to 5 and end to 7 to preserve duration.\",\"set_fields\":{\"start_seconds\":5,\"end_seconds\":7}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":true}",
+          "error": "Preserve the supplied source plan and all locks"
+        },
+        {
+          "elapsed_seconds": 2.4675111249962356,
+          "usage": {
+            "prompt_tokens": 1223,
+            "completion_tokens": 511,
+            "total_tokens": 1734,
+            "cost": 6.567264e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 6.6336e-05,
+              "upstream_inference_prompt_cost": 1.1148e-05,
+              "upstream_inference_completions_cost": 5.5188e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 133,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Extend s2 to three seconds by setting end_seconds to 5.\",\"set_fields\":{\"end_seconds\":5}},{\"shot_id\":\"s3\",\"note\":\"Ripple s3 after s2 extension: shift start to 5 and end to 7 to preserve its two-second duration.\",\"set_fields\":{\"start_seconds\":5,\"end_seconds\":7}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":true}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [
+              "s3"
+            ],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "cta",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 2.6847603330097627,
+          "usage": {
+            "prompt_tokens": 822,
+            "completion_tokens": 541,
+            "total_tokens": 1363,
+            "cost": 7.08246e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 7.154e-05,
+              "upstream_inference_prompt_cost": 1.3112e-05,
+              "upstream_inference_completions_cost": 5.8428e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 131,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\": {\"version\": \"1.1\", \"scenes\": [{\"id\": \"s1\", \"type\": \"animation\", \"description\": \"Beat 1\", \"start_seconds\": 0, \"end_seconds\": 2, \"shot_intent\": \"Explain the product\", \"narrative_role\": \"evidence\", \"metadata\": {\"voice\": \"approved\", \"background\": \"navy\", \"captions\": \"enabled\"}}, {\"id\": \"s2\", \"type\": \"animation\", \"description\": \"Beat 2\", \"start_seconds\": 2, \"end_seconds\": 4, \"shot_intent\": \"Explain the product\", \"narrative_role\": \"evidence\", \"metadata\": {\"voice\": \"approved\", \"background\": \"navy\", \"captions\": \"enabled\"}}, {\"id\": \"s3\", \"type\": \"animation\", \"description\": \"Beat 3\", \"start_seconds\": 4, \"end_seconds\": 6, \"shot_intent\": \"Explain the product\", \"narrative_role\": \"evidence\", \"metadata\": {\"voice\": \"approved\", \"background\": \"navy\", \"captions\": \"enabled\"}}]}, \"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s3\", \"note\": \"Change only s3 narrative_role to call_to_action; all other fields and locks untouched.\", \"set_fields\": {\"narrative_role\": \"call_to_action\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s3"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "intent",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 3.8246819579944713,
+          "usage": {
+            "prompt_tokens": 828,
+            "completion_tokens": 694,
+            "total_tokens": 1522,
+            "cost": 8.730216e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 8.8184e-05,
+              "upstream_inference_prompt_cost": 1.3232e-05,
+              "upstream_inference_completions_cost": 7.4952e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 370,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Demonstrate the speed benefit\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Change s2 shot_intent to demonstrate the speed benefit.\",\"set_fields\":{\"shot_intent\":\"Demonstrate the speed benefit\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]}}",
+          "error": "Preserve the supplied source plan and all locks"
+        },
+        {
+          "elapsed_seconds": 1.909292166994419,
+          "usage": {
+            "prompt_tokens": 1169,
+            "completion_tokens": 467,
+            "total_tokens": 1636,
+            "cost": 5.989896e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 6.0504e-05,
+              "upstream_inference_prompt_cost": 1.0068e-05,
+              "upstream_inference_completions_cost": 5.0436e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 135,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Change only s2 shot_intent to \\\"Demonstrate the speed benefit\\\".\",\"set_fields\":{\"shot_intent\":\"Demonstrate the speed benefit\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "two_notes",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 2.92230816699157,
+          "usage": {
+            "prompt_tokens": 832,
+            "completion_tokens": 593,
+            "total_tokens": 1425,
+            "cost": 7.658244e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 7.7356e-05,
+              "upstream_inference_prompt_cost": 1.3312e-05,
+              "upstream_inference_completions_cost": 6.4044e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 251,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Before\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"After\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Change s1 description to \\\"Before\\\".\",\"set_fields\":{\"description\":\"Before\"}},{\"shot_id\":\"s3\",\"note\":\"Change s3 description to \\\"After\\\".\",\"set_fields\":{\"description\":\"After\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":false}",
+          "error": "Preserve the supplied source plan and all locks"
+        },
+        {
+          "elapsed_seconds": 2.407459624999319,
+          "usage": {
+            "prompt_tokens": 1191,
+            "completion_tokens": 445,
+            "total_tokens": 1636,
+            "cost": 5.798232e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 5.8568e-05,
+              "upstream_inference_prompt_cost": 1.0508e-05,
+              "upstream_inference_completions_cost": 4.806e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 99,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Change s1 description to \\\"Before\\\".\",\"set_fields\":{\"description\":\"Before\"}},{\"shot_id\":\"s3\",\"note\":\"Change s3 description to \\\"After\\\".\",\"set_fields\":{\"description\":\"After\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1",
+              "s3"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "captions",
+      "passed": false,
+      "attempts": [
+        {
+          "elapsed_seconds": 4.357468333997531,
+          "usage": {
+            "prompt_tokens": 828,
+            "completion_tokens": 1162,
+            "total_tokens": 1990,
+            "cost": 0.00013734072,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.000138728,
+              "upstream_inference_prompt_cost": 1.3232e-05,
+              "upstream_inference_completions_cost": 0.000125496
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 840,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s3\",\"note\":\"Set s3 metadata.background to white; voice and captions remain locked.\",\"set_fields\":{\"metadata.background\":\"white\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]}}",
+          "error": "Additional properties are not allowed ('metadata.background' was unexpected)\n\nFailed validating 'additionalProperties' in schema['properties']['scenes']['items']:\n    {'type': 'object',\n     'required': ['id',\n                  'type',\n                  'description',\n                  'start_seconds',\n                  'end_seconds'],\n     'properties': {'id': {'type': 'string'},\n                    'type': {'type': 'string',\n                             'enum': ['talking_head',\n                                      'broll',\n                                      'animation',\n                                      'character_scene',\n                                      'diagram',\n                                      'text_card',\n                                      'transition',\n                                      'generated',\n                                      'screen_recording',\n                                      'anime_scene']},\n                    'description': {'type': 'string'},\n                    'start_seconds': {'type': 'number', 'minimum': 0},\n                    'end_seconds': {'type': 'number', 'minimum': 0},\n                    'script_section_id': {'type': 'string'},\n                    'framing': {'type': 'string'},\n                    'movement': {'type': 'string'},\n                    'transition_in': {'type': 'string'},\n                    'transition_out': {'type': 'string'},\n                    'overlay_notes': {'type': 'string'},\n             "
+        },
+        {
+          "elapsed_seconds": 2.365467333991546,
+          "usage": {
+            "prompt_tokens": 1419,
+            "completion_tokens": 428,
+            "total_tokens": 1847,
+            "cost": 6.067908e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 6.1292e-05,
+              "upstream_inference_prompt_cost": 1.5068e-05,
+              "upstream_inference_completions_cost": 4.6224e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 106,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s3\",\"note\":\"Set s3 metadata.background to white; voice and captions remain locked.\",\"set_fields\":{\"metadata\":{\"background\":\"white\"}}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]}}",
+          "error": "Unknown lock field: metadata.voice"
+        }
+      ]
+    },
+    {
+      "case": "recurring",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 2.7475457500113407,
+          "usage": {
+            "prompt_tokens": 831,
+            "completion_tokens": 643,
+            "total_tokens": 1474,
+            "cost": 8.190864e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 8.2736e-05,
+              "upstream_inference_prompt_cost": 1.3292e-05,
+              "upstream_inference_completions_cost": 6.9444e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 310,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Same product, closer framing\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Updated s2 description to closer framing of the same product; recurring products are allowed.\",\"set_fields\":{\"description\":\"Same product, closer framing\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":false}",
+          "error": "Preserve the supplied source plan and all locks"
+        },
+        {
+          "elapsed_seconds": 2.10622970800614,
+          "usage": {
+            "prompt_tokens": 1181,
+            "completion_tokens": 429,
+            "total_tokens": 1610,
+            "cost": 5.60736e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 1024,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 5.664e-05,
+              "upstream_inference_prompt_cost": 1.0308e-05,
+              "upstream_inference_completions_cost": 4.6332e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 97,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s2\",\"note\":\"Change s2 description to \\\"Same product, closer framing\\\"; recurring products are allowed.\",\"set_fields\":{\"description\":\"Same product, closer framing\"}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "retime",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 9.009722709000926,
+          "usage": {
+            "prompt_tokens": 849,
+            "completion_tokens": 2952,
+            "total_tokens": 3801,
+            "cost": 0.00032914332,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 0.000332468,
+              "upstream_inference_prompt_cost": 1.3652e-05,
+              "upstream_inference_completions_cost": 0.000318816
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 2590,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "response": "{\"scene_plan\":{\"version\":\"1.1\",\"scenes\":[{\"id\":\"s1\",\"type\":\"animation\",\"description\":\"Beat 1\",\"start_seconds\":0,\"end_seconds\":2,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s2\",\"type\":\"animation\",\"description\":\"Beat 2\",\"start_seconds\":2,\"end_seconds\":4,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}},{\"id\":\"s3\",\"type\":\"animation\",\"description\":\"Beat 3\",\"start_seconds\":4,\"end_seconds\":6,\"shot_intent\":\"Explain the product\",\"narrative_role\":\"evidence\",\"metadata\":{\"voice\":\"approved\",\"background\":\"navy\",\"captions\":\"enabled\"}}]},\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Shorten s1 to one second by setting end_seconds to 1.\",\"set_fields\":{\"end_seconds\":1}},{\"shot_id\":\"s2\",\"note\":\"Shorten s2 to one second by setting end_seconds to 3.\",\"set_fields\":{\"end_seconds\":3}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":true}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1",
+              "s2"
+            ],
+            "retime_shot_ids": [
+              "s3"
+            ],
+            "reuse_shot_ids": [
+              "s3"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

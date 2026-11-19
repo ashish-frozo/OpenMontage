@@ -64,7 +64,7 @@ class GeminiOmniVideo(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = []  # API key aliases are alternative credential formats below.
     install_instructions = (
         "Set GEMINI_API_KEY or GOOGLE_API_KEY to a Google AI Studio API key.\n"
         "  Get one at https://aistudio.google.com/apikey\n"
@@ -216,6 +216,9 @@ class GeminiOmniVideo(BaseTool):
         "Listen for synthesized audio quality and any requested dialogue/music",
         "After an edit turn, confirm unmentioned elements were preserved",
     ]
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"GEMINI_API_KEY"}, {"GOOGLE_API_KEY"}, {"GOOGLE_APPLICATION_CREDENTIALS_JSON"}]
 
     @staticmethod
     def _get_api_key() -> str | None:

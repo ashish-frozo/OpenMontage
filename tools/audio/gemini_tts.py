@@ -85,6 +85,9 @@ class GeminiTTS(BaseTool):
         },
     }
 
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"GOOGLE_API_KEY"}, {"GEMINI_API_KEY"}, {"GOOGLE_APPLICATION_CREDENTIALS_JSON"}]
+
     def get_status(self):
         from tools.google_credentials import has_google_credentials
 

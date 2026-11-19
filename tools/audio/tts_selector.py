@@ -169,6 +169,12 @@ class TTSSelector(BaseTool):
                 "default": "generate",
                 "description": "Operation mode. 'rank' returns scored provider rankings without generating.",
             },
+            "reference_audio_path": {"type":"string", "description":"Chatterbox reference speech recording."},
+            "variant": {"type":"string", "enum":["english","multilingual"], "description":"Chatterbox model variant; must be installed."},
+            "exaggeration": {"type":"number", "minimum":0, "maximum":2},
+            "cfg_weight": {"type":"number", "minimum":0, "maximum":1},
+            "temperature": {"type":"number", "exclusiveMinimum":0, "maximum":2},
+            "device": {"type":"string", "enum":["auto","cpu","mps","cuda"]},
             "output_path": {"type": "string"},
         },
     }
@@ -264,6 +270,25 @@ class TTSSelector(BaseTool):
                 raise ValueError("model and model_id disagree")
             adapted["model_id"] = inputs["model"]
             adapted.pop("model", None)
+        if tool.name in {"kokoro_tts", "chatterbox_tts"}:
+            adapted = {k:v for k,v in inputs.items() if k in props}
+            if inputs.get("input_type", "text") != "text":
+                raise ValueError("Local voice engines accept plain text, not SSML")
+            if inputs.get("timestamps"):
+                raise ValueError("Local voice engines do not provide word timestamps; align the generated audio separately")
+            if tool.name == "kokoro_tts":
+                aliases={"en":"a","en-US":"a","en-GB":"b","es":"e","fr":"f","hi":"h","it":"i","ja":"j","pt-BR":"p","zh":"z"}
+                language=inputs.get("language_code", "a")
+                adapted["language_code"]=aliases.get(language,language)
+                voice=inputs.get("voice") or inputs.get("voice_id")
+                defaults={"a":"af_heart","b":"bf_emma","e":"ef_dora","f":"ff_siwis","h":"hf_alpha","i":"if_sara","j":"jf_alpha","p":"pf_dora","z":"zf_xiaobei"}
+                adapted["voice"]=voice or defaults.get(adapted["language_code"],"")
+                if "speaking_rate" in inputs and "speed" not in inputs: adapted["speed"]=inputs["speaking_rate"]
+            elif any(k in inputs for k in ("speed", "speaking_rate", "pitch", "instructions")):
+                raise ValueError("Chatterbox supports exaggeration/cfg_weight/temperature, not speed, pitch or delivery instructions")
+            elif inputs.get("voice") or inputs.get("voice_id"):
+                raise ValueError("Chatterbox uses reference_audio_path rather than voice IDs; omit voice for its default speaker")
+            return adapted
         if tool.name not in {"azure_tts", "mai_tts"}:
             return adapted
 

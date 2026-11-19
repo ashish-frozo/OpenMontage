@@ -90,7 +90,7 @@ class AzureSpeechToText(BaseTool):
 
     # Availability is decided by get_status() (env var check), mirroring the
     # ElevenLabs provider tool — dependencies stays empty.
-    dependencies = []
+    dependencies = []  # alternate API-key auth shapes are declared below.
     install_instructions = (
         "Set your Azure AI Speech credentials:\n"
         "  export AZURE_SPEECH_KEY=your_speech_resource_key\n"
@@ -181,6 +181,12 @@ class AzureSpeechToText(BaseTool):
         "Check transcript text against source audio",
         "Verify word timestamps align with speech",
     ]
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [
+            {"AZURE_SPEECH_KEY", "AZURE_SPEECH_REGION"},
+            {"AZURE_SPEECH_KEY", "AZURE_SPEECH_ENDPOINT"},
+        ]
 
     def get_status(self) -> ToolStatus:
         if os.environ.get("AZURE_SPEECH_KEY") and (

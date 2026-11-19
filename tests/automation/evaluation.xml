@@ -1,0 +1,12 @@
+<evaluation>
+  <qa_pair><question>Inspect the media export contract and implementation. What is the largest byte chunk a caller can request?</question><answer>262144</answer></qa_pair>
+  <qa_pair><question>Compare interactive downloads with Instagram publication media serving. How long does an interactive signed link last in seconds?</question><answer>300</answer></qa_pair>
+  <qa_pair><question>Inspect automatic policy validation and final review. Does a passed technical probe alone authorize publication?</question><answer>false</answer></qa_pair>
+  <qa_pair><question>Trace a queued paid job to submission and a worker timeout. Is its unknown charge automatically released?</question><answer>false</answer></qa_pair>
+  <qa_pair><question>Inspect research fetch storage and evidence validation. Can a search snippet with no fetched source satisfy an evidence link?</question><answer>false</answer></qa_pair>
+  <qa_pair><question>Inspect script auditing and automatic checkpoint validation. Can an audit of different script section text approve the current script?</question><answer>false</answer></qa_pair>
+  <qa_pair><question>Compare Instagram and YouTube metric collection. Which platform's media insights use a lifetime window here?</question><answer>instagram</answer></qa_pair>
+  <qa_pair><question>Trace an Instagram container response through persistence. What delivery status is stored before processing is polled?</question><answer>container_ready</answer></qa_pair>
+  <qa_pair><question>Trace an upload timeout and the next publication attempt. Which status prevents automatic resubmission?</question><answer>uncertain</answer></qa_pair>
+  <qa_pair><question>Inspect asset approval, file hashing and search. Is a modified asset still returned as approved reusable material?</question><answer>false</answer></qa_pair>
+</evaluation>

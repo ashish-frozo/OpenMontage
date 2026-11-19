@@ -1,0 +1,2 @@
+# Optional MCP interface; install alongside the existing core requirements.
+mcp>=1.20,<2

@@ -47,7 +47,9 @@ stages:
     skill: pipelines/documentary-montage/idea-director
     produces:
       - brief
-    tools_available: []
+    tools_available:
+      - rea_video_analyze
+      - rea_video_review
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -69,7 +71,11 @@ stages:
       - brief
     produces:
       - scene_plan
-    tools_available: []
+    tools_available:
+      - stock_image_search
+      - rea_video_analyze
+      - rea_video_review
+      - animatic
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -97,6 +103,12 @@ stages:
       - clip_search
       - music_gen
     tools_available:
+      - stock_image_search
+      - stock_image_download
+      - rea_video_analyze
+      - rea_video_review
+      - transcriber
+      - media_transition
       - direct_clip_search
       - corpus_builder
       - clip_search
@@ -122,7 +134,10 @@ stages:
       - asset_manifest
     produces:
       - edit_decisions
-    tools_available: []
+    tools_available:
+      - animatic
+      - sound_design
+      - editor_package
     checkpoint_required: true
     human_approval_default: true
     review_focus:
@@ -154,6 +169,10 @@ stages:
       - video_trimmer
       - video_stitch
     tools_available:
+      - transcriber
+      - creator_quality
+      - sound_design
+      - editor_package
       - video_compose
       - audio_mixer
       - color_grade

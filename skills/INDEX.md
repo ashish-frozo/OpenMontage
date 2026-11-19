@@ -320,6 +320,13 @@ Style playbooks (`styles/*.yaml`) define visual language, typography, motion, au
 | `minimalist-diagram` | whiteboard | focused, technical | Technical deep-dives, architecture |
 | `anime-ghibli` | custom | warm, whimsical, contemplative | Narrative animations, nature-themed stories, emotional storytelling, fantasy visuals |
 
+The MCP style catalog also includes 15 community recipes and curated motion
+resources. Discover them with `factory_styles` and `factory_motion_resources`,
+then retrieve a complete recipe with `factory_style`. These recipes are
+renderer-aware guidance, not YAML playbooks or proof that a renderer is
+installed. See `docs/content-factory/motion-library.md` for provenance and
+license boundaries.
+
 Load via `styles/playbook_loader.py`: `load_playbook("clean-professional")`. `list_playbooks()` is the authoritative list.
 
 `ink-sketch` (Ink Theater) is a **style id** handled by `creative/ink-theater.md` and the `ink-theater/` engine, not a YAML playbook.
@@ -327,7 +334,7 @@ Load via `styles/playbook_loader.py`: `load_playbook("clean-professional")`. `li
 ## Installed Agent Skills (Layer 3)
 
 All agent skills live in `.agents/skills/` and are managed via `npx skills add`.
-`ls .agents/skills` is the authoritative list (92 skill directories as of 2026-10-25); the table below groups them by what they are for.
+`ls .agents/skills` is the authoritative list; the table below groups them by what they are for.
 Claude Code accesses them via symlinks in `.claude/skills/`.
 
 | Category | Installed Skills | Source |
@@ -339,7 +346,8 @@ Claude Code accesses them via symlinks in `.claude/skills/`.
 | **Math Animation** | `manimce-best-practices`, `manimgl-best-practices`, `manim-composer` | `adithya-s-k/manim_skill` |
 | **3D Graphics** | `threejs-world-generation` (OpenMontage semantic-world workflow), `threejs-animation`, `threejs-fundamentals`, `threejs-geometry`, `threejs-interaction`, `threejs-lighting`, `threejs-loaders`, `threejs-materials`, `threejs-postprocessing`, `threejs-shaders`, `threejs-textures` | Local OpenMontage skill + `cloudai-x/threejs-skills` |
 | **Diagrams** | `beautiful-mermaid`, `d3-viz` | `intellectronica/agent-skills`, `davila7/claude-code-templates` |
-| **Animation** | `framer-motion`, `lottie-bodymovin` | `pproenca/dot-skills`, `dylantarre/animation-principles` |
+| **Animation** | `framer-motion`, `lottie-bodymovin`, `lottiefiles-motion-design` (motion direction, timing/easing, choreography) | `pproenca/dot-skills`, `dylantarre/animation-principles`, `LottieFiles/motion-design-skill` (vendored with provenance) |
+| **Procedural / Character Animation** | `anidoodle` (procedural illustration, vendored Apache-2.0 skill/engine), `huashu-art-motion` (art styles and explainer grammars, vendored MIT skill/reference docs), `claude-animation-base` (character acting guide, MIT; original characters only) | `alexgreensh/anidoodle`, `alchaincyf/huashu-art-motion`, `JohnHeibel/ClaudeAnimationBase` (see each `.agents/skills/*/PROVENANCE.md`) |
 | **Design** | `tailwind-design-system`, `web-design-guidelines`, `vercel-react-best-practices`, `vercel-composition-patterns` | `wshobson/agents`, `vercel-labs/agent-skills` |
 | **AI Video (HeyGen)** | `heygen`, `avatar-video`, `create-video`, `faceswap`, `ai-video-gen`, `video-download`, `video-edit`, `video-translate`, `video-understand`, `visual-style` | `heygen-com/skills` |
 | **AI Video/Image/TTS/Avatar (Kling Official)** | `kling-official` - official direct API auth, Classic/Turbo/Omni task protocols, multi-reference Omni syntax, internal Elements/Account Usage helpers, callback notes, TTS voice parameters, avatar/lip-sync face selection, error handling, and cost governance for `kling_official_video` / `kling_official_image` / `kling_tts` / `kling_avatar` / `kling_lip_sync` | Local OpenMontage skill |

@@ -487,6 +487,15 @@ class BaseTool(ABC):
         except DependencyError:
             return ToolStatus.UNAVAILABLE
 
+    def credential_env_options(self, inputs: dict[str, Any] | None = None) -> list[set[str]]:
+        """Return alternative complete environment-key sets for this operation.
+
+        The default treats declared ``env:`` dependencies as one required set.
+        Tools with alternate credential formats may override this method.
+        """
+        names = {dep[4:] for dep in self.dependencies if dep.startswith("env:")}
+        return [names] if names else []
+
     def check_dependencies(self) -> None:
         """Verify all dependencies are installed. Raises DependencyError if not."""
         for dep in self.dependencies:
@@ -529,6 +538,7 @@ class BaseTool(ABC):
             "module_path": self.__class__.__module__,
             "usage_location": usage_location,
             "dependencies": self.dependencies,
+            "credential_env_options": [sorted(option) for option in self.credential_env_options()],
             "install_instructions": self.install_instructions,
             "capabilities": self.capabilities,
             "input_schema": self.input_schema,

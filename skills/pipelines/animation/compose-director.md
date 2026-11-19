@@ -231,3 +231,15 @@ Recommended metadata keys:
 - **Skipping `composition_validator`** — catches missing files, bad timings, audio mismatches before you waste render time.
 - **Not extracting frames for self-review** — a rendered video is not "done" until frames are visually inspected. Black frames, missing particles, or invisible images are not always obvious from file size alone.
 - **Using `durationInFrames` from `useVideoConfig()` for scene-level timing** — this returns the FULL composition duration, not the scene's Sequence duration. See `skills/core/remotion.md` Critical Constraints.
+
+## Creator workflow contract
+Read `.agents/skills/creator-workflow/SKILL.md`. New scene plans use version 1.1,
+stable ids, shot_intent, narrative_role and declared continuity. Before costly
+assets, render and review a playable animatic with temporary approved audio.
+Record the animatic path and review in scene-plan metadata before requesting
+scene-plan approval. Use factory_revision_plan for timestamped changes and locks;
+reapprove revisions and regenerate only affected shots. At compose, run
+creator_quality, inspect all shot boundaries and listen to the soundtrack. Its
+report is evidence for final_review, not automatic creative approval. Preserve
+accessibility captions and intentional recurring subjects. For editor delivery,
+use editor_package with separate audio tracks and explicit unsupported effects.

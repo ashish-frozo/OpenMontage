@@ -38,7 +38,8 @@ class Transcriber(BaseTool):
 
     dependencies = ["python:faster_whisper"]
     install_instructions = (
-        "pip install faster-whisper  # CPU mode\n"
+        "pip install -r requirements-automation.txt  # CPU mode with tested PyAV compatibility\n"
+        "python scripts/setup_transcriber.py --model base  # Explicit model download before offline runs\n"
         "pip install faster-whisper[gpu]  # GPU mode (requires CUDA)\n"
         "pip install whisperx  # For diarization support"
     )
@@ -158,6 +159,7 @@ class Transcriber(BaseTool):
                 model_size,
                 device=selected_device,
                 compute_type=selected_compute_type,
+                local_files_only=True,
             )
             segments_iter, transcription_info = model.transcribe(
                 str(input_path),

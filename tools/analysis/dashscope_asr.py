@@ -44,7 +44,7 @@ class DashscopeAsr(BaseTool):
     determinism = Determinism.DETERMINISTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = ["env:DASHSCOPE_API_KEY"]
     install_instructions = (
         "Set DASHSCOPE_API_KEY to your Alibaba Cloud DashScope API key.\n"
         "  Get one at https://dashscope.aliyun.com/"

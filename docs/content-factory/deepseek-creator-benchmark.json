@@ -1,0 +1,466 @@
+{
+  "model_requested": "deepseek/deepseek-v4.1-flash-1017",
+  "reasoning_enabled": false,
+  "scope": "10 synthetic shot-revision contract tasks; not visual quality or end-to-end production",
+  "passed": 10,
+  "total": 10,
+  "results": [
+    {
+      "case": "hook",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.8528723750059726,
+          "usage": {
+            "prompt_tokens": 824,
+            "completion_tokens": 145,
+            "total_tokens": 969,
+            "cost": 3.18186e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 0,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 3.214e-05,
+              "upstream_inference_prompt_cost": 1.648e-05,
+              "upstream_inference_completions_cost": 1.566e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s1\", \"note\": \"Change only s1 description to \\\"Open with the result\\\".\", \"set_fields\": {\"description\": \"Open with the result\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s2",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "background",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.2972249580052448,
+          "usage": {
+            "prompt_tokens": 826,
+            "completion_tokens": 142,
+            "total_tokens": 968,
+            "cost": 2.824272e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 2.8528e-05,
+              "upstream_inference_prompt_cost": 1.3192e-05,
+              "upstream_inference_completions_cost": 1.5336e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s2\", \"note\": \"Set background to cream, preserving voice and captions metadata.\", \"set_fields\": {\"metadata.background\": \"cream\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "shorten",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.413459208997665,
+          "usage": {
+            "prompt_tokens": 830,
+            "completion_tokens": 262,
+            "total_tokens": 1092,
+            "cost": 4.115232e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 4.1568e-05,
+              "upstream_inference_prompt_cost": 1.3272e-05,
+              "upstream_inference_completions_cost": 2.8296e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s1\", \"note\": \"Shorten s1 to one second by setting end_seconds=1.\", \"set_fields\": {\"end_seconds\": 1}}, {\"shot_id\": \"s2\", \"note\": \"Ripple: shift s2 earlier to start at 1s and keep its 2s duration, ending at 3s.\", \"set_fields\": {\"start_seconds\": 1, \"end_seconds\": 3}}, {\"shot_id\": \"s3\", \"note\": \"Ripple: shift s3 earlier to start at 3s and keep its 2s duration, ending at 5s.\", \"set_fields\": {\"start_seconds\": 3, \"end_seconds\": 5}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": true}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1"
+            ],
+            "retime_shot_ids": [
+              "s2",
+              "s3"
+            ],
+            "reuse_shot_ids": [
+              "s2",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "extend",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.5113026670005638,
+          "usage": {
+            "prompt_tokens": 830,
+            "completion_tokens": 201,
+            "total_tokens": 1031,
+            "cost": 3.46302e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 3.498e-05,
+              "upstream_inference_prompt_cost": 1.3272e-05,
+              "upstream_inference_completions_cost": 2.1708e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s2\", \"note\": \"Extend Beat 2 to three seconds (2-5s).\", \"set_fields\": {\"end_seconds\": 5}}, {\"shot_id\": \"s3\", \"note\": \"Ripple: shift Beat 3 to start at 5s and end at 7s to follow extended s2.\", \"set_fields\": {\"start_seconds\": 5, \"end_seconds\": 7}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": true}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [
+              "s3"
+            ],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "cta",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 0.9934855410101591,
+          "usage": {
+            "prompt_tokens": 821,
+            "completion_tokens": 140,
+            "total_tokens": 961,
+            "cost": 2.792988e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 2.8212e-05,
+              "upstream_inference_prompt_cost": 1.3092e-05,
+              "upstream_inference_completions_cost": 1.512e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s3\", \"note\": \"Change narrative_role to call_to_action.\", \"set_fields\": {\"narrative_role\": \"call_to_action\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s3"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "intent",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.6901976669905707,
+          "usage": {
+            "prompt_tokens": 827,
+            "completion_tokens": 151,
+            "total_tokens": 978,
+            "cost": 2.92248e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 2.952e-05,
+              "upstream_inference_prompt_cost": 1.3212e-05,
+              "upstream_inference_completions_cost": 1.6308e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s2\", \"note\": \"Change only s2 shot_intent to \\\"Demonstrate the speed benefit\\\".\", \"set_fields\": {\"shot_intent\": \"Demonstrate the speed benefit\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "two_notes",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.1140277499944204,
+          "usage": {
+            "prompt_tokens": 831,
+            "completion_tokens": 171,
+            "total_tokens": 1002,
+            "cost": 3.14424e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 3.176e-05,
+              "upstream_inference_prompt_cost": 1.3292e-05,
+              "upstream_inference_completions_cost": 1.8468e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s1\", \"note\": \"Change s1 description to \\\"Before\\\".\", \"set_fields\": {\"description\": \"Before\"}}, {\"shot_id\": \"s3\", \"note\": \"Change s3 description to \\\"After\\\".\", \"set_fields\": {\"description\": \"After\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1",
+              "s3"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "captions",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.307824959003483,
+          "usage": {
+            "prompt_tokens": 827,
+            "completion_tokens": 141,
+            "total_tokens": 968,
+            "cost": 2.81556e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 2.844e-05,
+              "upstream_inference_prompt_cost": 1.3212e-05,
+              "upstream_inference_completions_cost": 1.5228e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s3\", \"note\": \"Set background to white; voice and captions unchanged.\", \"set_fields\": {\"metadata.background\": \"white\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s3"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s2"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "recurring",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.1884660419891588,
+          "usage": {
+            "prompt_tokens": 830,
+            "completion_tokens": 146,
+            "total_tokens": 976,
+            "cost": 2.87496e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 2.904e-05,
+              "upstream_inference_prompt_cost": 1.3272e-05,
+              "upstream_inference_completions_cost": 1.5768e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\": \"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\", \"changes\": [{\"shot_id\": \"s2\", \"note\": \"Change s2 description to \\\"Same product, closer framing\\\".\", \"set_fields\": {\"description\": \"Same product, closer framing\"}}], \"locks\": {\"s1\": [\"metadata.voice\", \"metadata.captions\"], \"s2\": [\"metadata.voice\", \"metadata.captions\"], \"s3\": [\"metadata.voice\", \"metadata.captions\"]}, \"ripple\": false}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s2"
+            ],
+            "retime_shot_ids": [],
+            "reuse_shot_ids": [
+              "s1",
+              "s3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": "retime",
+      "passed": true,
+      "attempts": [
+        {
+          "elapsed_seconds": 1.3510586250049528,
+          "usage": {
+            "prompt_tokens": 848,
+            "completion_tokens": 163,
+            "total_tokens": 1011,
+            "cost": 3.092364e-05,
+            "is_byok": false,
+            "prompt_tokens_details": {
+              "cached_tokens": 256,
+              "cache_write_tokens": 0,
+              "audio_tokens": 0,
+              "video_tokens": 0
+            },
+            "cost_details": {
+              "upstream_inference_cost": 3.1236e-05,
+              "upstream_inference_prompt_cost": 1.3632e-05,
+              "upstream_inference_completions_cost": 1.7604e-05
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "image_tokens": 0,
+              "audio_tokens": 0
+            }
+          },
+          "model": "deepseek/deepseek-v4.1-flash-1017",
+          "finish_reason": "stop",
+          "response": "{\"expected_fingerprint\":\"1210487f624b526b908d452baa251d27e1bb34f22056e1e8bbc42cf7289309f0\",\"changes\":[{\"shot_id\":\"s1\",\"note\":\"Shorten s1 to one second (end at 1s).\",\"set_fields\":{\"end_seconds\":1}},{\"shot_id\":\"s2\",\"note\":\"Shorten s2 to one second (end at 3s).\",\"set_fields\":{\"end_seconds\":3}}],\"locks\":{\"s1\":[\"metadata.voice\",\"metadata.captions\"],\"s2\":[\"metadata.voice\",\"metadata.captions\"],\"s3\":[\"metadata.voice\",\"metadata.captions\"]},\"ripple\":true}",
+          "impact": {
+            "rerender_shot_ids": [
+              "s1",
+              "s2"
+            ],
+            "retime_shot_ids": [
+              "s3"
+            ],
+            "reuse_shot_ids": [
+              "s3"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

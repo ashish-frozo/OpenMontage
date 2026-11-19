@@ -41,7 +41,7 @@ class HiggsFieldVideo(BaseTool):
     determinism = Determinism.STOCHASTIC
     runtime = ToolRuntime.API
 
-    dependencies = []
+    dependencies = []  # Combined and key/secret credential formats are alternatives below.
     install_instructions = (
         "Set HIGGSFIELD_API_KEY and HIGGSFIELD_API_SECRET for your Higgsfield Cloud credentials.\n"
         "  Get them at https://cloud.higgsfield.ai/api-keys\n"
@@ -120,6 +120,9 @@ class HiggsFieldVideo(BaseTool):
     idempotency_key_fields = ["prompt", "model", "operation", "duration"]
     side_effects = ["writes video file to output_path", "calls Higgsfield Cloud API"]
     user_visible_verification = ["Watch generated clip for motion coherence and visual quality"]
+
+    def credential_env_options(self, inputs=None) -> list[set[str]]:
+        return [{"HIGGSFIELD_KEY"}, {"HIGGSFIELD_API_KEY", "HIGGSFIELD_API_SECRET"}]
 
     def _get_credentials(self) -> tuple[str, str] | None:
         """Return (api_key, api_secret) or None if not configured."""

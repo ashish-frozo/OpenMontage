@@ -2039,6 +2039,11 @@ class VideoCompose(BaseTool):
 
         # Deep-copy props so we don't mutate the original
         props = json.loads(json.dumps(composition_data))
+        # Remotion reads this at the top level; stage metadata is only the
+        # pipeline's decision log and was previously ignored by Root.tsx.
+        metadata = composition_data.get("metadata") or {}
+        if "tailPaddingSeconds" in metadata:
+            props["tailPaddingSeconds"] = metadata["tailPaddingSeconds"]
 
         # Build a custom themeConfig from the playbook's actual colors.
         # This ensures every video gets a unique visual identity derived
@@ -2101,6 +2106,11 @@ class VideoCompose(BaseTool):
         props_path = output_path.parent / ".remotion_props.json"
         staged_count = 0
         profile_name = inputs.get("profile")
+        if not profile_name:
+            assets = (inputs.get("asset_manifest") or {}).get("assets") or []
+            sizes = {a.get("resolution") for a in assets if a.get("resolution")}
+            if sizes == {"1080x1920"}:
+                profile_name = "tiktok"
         try:
             staged_count = self._stage_remotion_media(props, public_dir)
             if not staged_count and cleanup_public_dir:
@@ -2458,7 +2468,7 @@ class VideoCompose(BaseTool):
                     technical_probe["issues"].append(
                         f"Resolution {width}x{height} is very low"
                     )
-                if not audio_stream:
+                if not audio_stream and (edit_decisions or {}).get("metadata", {}).get("audio_intent") != "silent":
                     technical_probe["issues"].append("No audio stream in output")
             else:
                 technical_probe["issues"].append(
@@ -2559,7 +2569,7 @@ class VideoCompose(BaseTool):
                             pass
 
                 if mean_vol is not None:
-                    if mean_vol < -60:
+                    if mean_vol < -60 and (edit_decisions or {}).get("metadata", {}).get("audio_intent") != "silent":
                         audio_spotcheck["unexpected_silence"] = True
                         audio_spotcheck["issues"].append(
                             f"Mean volume {mean_vol:.1f} dB — effectively silent"

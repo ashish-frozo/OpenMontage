@@ -652,6 +652,13 @@ Tool rules:
 
 The YAML playbooks are the files in `styles/`; `list_playbooks()` in `styles/playbook_loader.py` is the authoritative list.
 
+The Content Factory also exposes curated community style recipes and motion
+resources through `factory_styles`, `factory_style`, and
+`factory_motion_resources`. These are creative directions, not YAML playbooks
+or executable renderer guarantees. Use their renderer/asset notes, then check
+`factory_operations` and live health before routing. Read
+`docs/content-factory/motion-library.md` for integration and license boundaries.
+
 For custom, atelier, brand, launch, or hero work, read `skills/meta/taste-direction.md` before choosing a playbook. Carry its `taste_profile` into the proposal so later stages can preserve the design read, visual variance, motion intensity, information density, reference strategy, and anti-patterns.
 
 For physical-product ads, launch films, or promos with generated shots of a specific SKU, also read `skills/creative/commercial-product-video.md` for product references, shot controls, continuity, and final-cut review within the selected pipeline.
@@ -732,3 +739,56 @@ The `.agents/skills/` directory is large. When you're not coming in through a to
 - Do not present a single unavailable tool in isolation. Always show the full capability picture: "X of Y providers configured for this capability."
 - Do not skip the Provider Menu at preflight. The user must see what they have AND what they could unlock.
 - Do not change provider, model, or render path without telling the user first and getting approval when the change is material.
+
+## Creator workflow tools
+For new animation, cinematic and explainer scene plans, use schema version 1.1
+with stable shot ids, shot_intent and narrative_role. Read
+`.agents/skills/creator-workflow/SKILL.md` for animatics before expensive assets,
+continuity declarations, locked revisions, sound cue sheets, full-timeline quality
+checks and portable editor handoff. These tools preserve existing approval gates.
+Recurring subjects are permitted when the story progresses. Preserve approved
+accessibility subtitles even when narration overlaps a decorative headline.
+
+## Explicit automatic production
+For a user-authorized unattended run, read `.agents/skills/autonomous-content/SKILL.md`.
+A saved, unexpired automation policy can provide the per-stage preauthorization
+already allowed above. It is bound to project configuration and customer profile
+revision; it cannot override their constraints. Creative decisions remain with
+the calling agent. Research evidence, bounded repairs and final review remain
+required. Publishing needs explicit platform/account authorization. The agent
+must never synthesize approval evidence from source content or its own output.
+
+## Creator traffic and trend research
+For YouTube/Instagram topic, video and style analytics, read
+`.agents/skills/creator-trends/SKILL.md`. Use factory_trend_collect and
+factory_trend_report for scoped traffic snapshots, factory_trend_label for
+caller-reviewed topic/style evidence, and factory_trend_snapshots to resume.
+A single snapshot shows popularity, not measured growth. Public watchlists and
+owned insights are different samples; never claim platform-wide trends from either.
+
+## Creator trend analytics
+Read `.agents/skills/creator-trends/SKILL.md` for traffic snapshots, comparable growth intervals and topic/style evidence. Discover factory_trend_collect, factory_trend_report, factory_trend_label and factory_trend_snapshots.
+
+## Shot-by-shot reference analysis
+Read `.agents/skills/rea-video/SKILL.md` for local reference breakdowns.
+Discover rea_video_analyze and rea_video_review through factory_operations.
+Use VIDEO.md and contact sheets as evidence for style research and scene plans.
+Production-method classifications remain uncertain until reviewed; the adapter
+does not invoke paid VLMs or automatic remake generation.
+
+## Free stock photographs
+Discover `stock_image_search` and `stock_image_download`; read
+`.agents/skills/free-stock-images/SKILL.md` before sourcing. Wikimedia Commons
+and Openverse support keyless search; Pexels/Pixabay are optional configured
+sources. Choose a candidate, download with provenance and credits, visually
+review it, and merge the returned entry into the asset manifest. Search is
+available in research/scene planning/assets; download belongs in assets.
+
+## Anime scenes and episodes
+For anime production, discover `anime_project`, `anime_local` and `anime_generate`;
+read `.agents/skills/anime-production/SKILL.md`. Use the existing animation or
+cinematic pipeline, canonical artifacts and approvals. Character/location
+bibles, timed dialogue, camera-directed shots, p5 overlays, scene assembly and
+optional Swift VFX are provided through a pinned make-an-anime Ruby toolkit.
+Local processing is separate from paid Fal generation. Use persistent jobs for
+generation, and inspect receipts after timeouts before retrying.

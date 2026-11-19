@@ -1,0 +1,5 @@
+# Install in .venv-chatterbox, separately from the MCP server and Kokoro.
+chatterbox-tts==0.1.7
+soundfile==0.14.0
+# Perth 1.0.1 imports pkg_resources, removed in newer setuptools.
+setuptools==80.9.0

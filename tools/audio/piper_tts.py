@@ -47,20 +47,24 @@ class PiperTTS(BaseTool):
     capabilities = [
         "text_to_speech",
         "offline_generation",
+        "multilingual",
     ]
     supports = {
         "voice_cloning": False,
-        "multilingual": False,
+        "multilingual": True,
         "offline": True,
         "native_audio": True,
+        "locale_selection": "select a language-specific installed voice model",
     }
     best_for = [
         "offline narration fallback",
         "privacy-sensitive local-only workflows",
+        "language-specific local voices when the matching Piper model is installed",
     ]
     not_good_for = [
         "best-in-class expressive voice quality",
         "voice clone matching",
+        "assuming one installed voice supports every language; voice-model licenses vary",
     ]
 
     input_schema = {

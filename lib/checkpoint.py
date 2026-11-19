@@ -165,6 +165,10 @@ def _validate_artifacts_for_stage(
             )
         try:
             validate_artifact(artifact_name, artifact_data)
+            if artifact_name == "scene_plan" and artifact_data.get("version") == "1.1":
+                from lib.creator import review_scene_plan
+                review_scene_plan(artifact_data)  # Reject duplicate ids and invalid time ordering.
+
         except Exception as exc:
             raise CheckpointValidationError(
                 f"Artifact {artifact_name!r} failed schema validation: {exc}"
