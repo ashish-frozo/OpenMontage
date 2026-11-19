@@ -4,11 +4,8 @@ import {
 } from 'lucide-react';
 import { createWorkspace, saveBrief, startClipFromUrl, saveBrandProfile, saveProviderCredential, sendSignInLink, signOut } from './actions';
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
 import RevokeCredential from './components/revoke-credential';
 import JobActivity from './components/job-activity';
-import McpAccess from './components/mcp-access';
-import ConnectEngine from './components/connect-engine';
 import StartResearch from './components/start-research';
 import ClipResults from './components/clip-results';
 import ResearchResults from './components/research-results';
@@ -19,23 +16,8 @@ type Workspace = { id: string; name: string; slug: string };
 type Membership = { role: string; workspaces: Workspace | null };
 type Project = { id: string; title: string; platform: string; format: string; status: string; brief: Record<string, unknown> | null; created_at: string; current_stage: string | null; current_checkpoint_status: string | null; approval_needed: boolean; stage_updated_at: string | null };
 type Job = { id: string; project_id: string; operation: string; status: string; progress: number; progress_label: string; created_at: string; updated_at: string };
-type EngineConnection = { id: string; label: string; status: string; last_seen_at: string | null };
-type EngineCapability = { id: string; operation_key: string; display_name: string; description: string; pipeline_stage: string; runtime: string; estimated_cost_usd: number | null };
 type ProviderConnection = { id: string; provider: string; label: string; credential_hint: string | null; status: string };
 type BrandProfile = { brand_name: string; audience: string; voice: string; visual_direction: string; avoid_terms: string[]; color_palette: string };
-type McpToken = { id: string; label: string; scopes: string[]; created_at: string; expires_at: string; revoked_at: string | null; last_used_at: string | null };
-
-function publicMcpEndpoint(value: string | undefined) {
-  if (!value) return '';
-  try {
-    const url = new URL(value);
-    const secure = url.protocol === 'https:' || (url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname));
-    if (!secure || url.username || url.password || url.search || url.hash) return '';
-    return `${url.origin}${url.pathname}`;
-  } catch {
-    return '';
-  }
-}
 
 const noticeText: Record<string, string> = {
   'configure-supabase': 'Connect a Supabase project to enable sign-in and workspace data.',
@@ -56,27 +38,21 @@ const noticeText: Record<string, string> = {
   'workspace-access': 'You no longer have access to that workspace. Refresh and choose a workspace you belong to.',
   'brief-failed': 'We could not save this brief. Please try again.',
   'project-load-failed': 'Your workspace opened, but recent projects could not load. Refresh to try again.',
-  'brief-saved': 'Research brief saved. Use it with your connected OpenMontage MCP to gather cited sources and shape the story.',
+  'brief-saved': 'Research brief saved. Start research when you are ready to gather cited sources and shape the story.',
   'clip-rights': 'Confirm that you own the source video or have permission to process it.',
   'clip-invalid-url': 'Use a secure YouTube link or a direct HTTPS link to a video file.',
   'clip-invalid-options': 'Choose 1–15 clips, a supported hook style, and a cost reserve from $0.01 to $100.',
-  'clip-tool-unavailable': 'The connected MCP does not report OpenShorts as available. Check its setup and health before trying again.',
-  'clip-preflight-failed': 'The MCP could not validate and save this clip route. No clip job was submitted.',
+  'clip-tool-unavailable': 'OpenShorts is not available on the video worker. Check its setup and health before trying again.',
+  'clip-preflight-failed': 'The worker could not validate and save this clip route. No clip job was submitted.',
   'clip-budget-exceeded': 'The preflight estimate exceeds the reserve you entered. No clip job was submitted.',
   'clip-save-failed': 'The route was saved, but Studio could not save the project. No clip job was submitted.',
-  'clip-submission-unknown': 'The MCP response was interrupted after submission may have started. Check project activity before retrying.',
-  'clip-start-failed': 'Studio could not start this clip workflow. Check the engine connection and project activity before retrying.',
+  'clip-submission-unknown': 'The worker response was interrupted after submission may have started. Check project activity before retrying.',
+  'clip-start-failed': 'Studio could not start this clip workflow. Check video service status and project activity before retrying.',
   'clips-started': 'Clip workflow started. Follow its progress and results in project activity.',
   'invalid-brand-profile': 'Check the brand name and keep each brand field within its stated limit.',
   'brand-admin-required': 'Only workspace owners and admins can edit the brand profile.',
   'brand-save-failed': 'We could not save this brand profile. Please try again.',
   'brand-saved': 'Brand profile saved. New briefs will include this guidance.',
-  'engine-admin-required': 'Only workspace owners and admins can disconnect an engine.',
-  'engine-storage-unavailable': 'Secure engine credentials are not configured on this Studio server.',
-  'engine-not-found': 'That engine connection is no longer available. Refresh the page and try again.',
-  'engine-revoke-failed': 'Studio could not revoke this engine connection. Try again.',
-  'engine-already-revoked': 'That engine connection has already been disconnected.',
-  'engine-revoked': 'Engine disconnected. Its workspace token was revoked and its encrypted secret erased.',
   'invalid-provider-credential': 'Check the provider name, label, and API key, then try again.',
   'credential-storage-unavailable': 'Secure credential storage is not configured for this deployment.',
   'provider-admin-required': 'Only workspace owners and admins can connect provider credentials.',
@@ -85,10 +61,7 @@ const noticeText: Record<string, string> = {
   'provider-revoke-failed': 'We could not revoke that provider key. Try again.',
   'provider-already-revoked': 'That provider key is already revoked.',
   'provider-revoked': 'The encrypted provider key was removed and the connection revoked.',
-  'provider-saved': 'Provider credential encrypted and saved. The engine must still support this provider before it can use the key.',
-  'mcp-token-revoke-failed': 'We could not revoke that MCP token. Try again.',
-  'mcp-token-already-revoked': 'That MCP token is already revoked.',
-  'mcp-token-revoked': 'MCP token revoked. Connected clients can no longer access this workspace.',
+  'provider-saved': 'Provider credential encrypted and saved. The video worker can use it when a compatible provider is selected.',
 };
 
 function Brand() {
@@ -173,7 +146,7 @@ function NextActionFocus({ projects, jobs, projectsError, jobsError, engineLive 
     const title = projectById.get(failedJob.project_id)?.title || 'a video project';
     focus = { title: `Review the failed step for ${title}`, detail: 'Inspect its result and provider status before retrying; work may have had external effects.', href: '#workspace-setup', action: 'Review job', tone: 'attention' };
   } else if (briefProject) {
-    focus = { title: engineLive ? `Start research on ${briefProject.title}` : 'Connect an engine to start research', detail: engineLive ? 'Your brief is saved. Research is the next step, and no paid generation starts here.' : 'Your brief is saved. Connect an OpenMontage MCP engine before gathering sources.', href: engineLive ? `#project-${briefProject.id}` : '#workspace-setup', action: engineLive ? 'Open brief' : 'Open setup' };
+    focus = { title: engineLive ? `Start research on ${briefProject.title}` : 'Video services are offline', detail: engineLive ? 'Your brief is saved. Research is the next step, and no paid generation starts here.' : 'Your brief is safe. The video worker must be online before research can start.', href: engineLive ? `#project-${briefProject.id}` : '#workspace-setup', action: engineLive ? 'Open brief' : 'Check status' };
   } else if (researchProject) {
     focus = { title: `Review research for ${researchProject.title}`, detail: 'Check source leads and evidence before shaping the script.', href: `#project-${researchProject.id}`, action: 'Review research' };
   } else if (productionProject) {
@@ -217,23 +190,14 @@ function BrandProfilePanel({ workspace, role, profile }: { workspace: Workspace;
   </section>;
 }
 
-function CreatorDesk({ workspace, email, role, projects, projectsError, jobs, jobsError, capabilities, engineLive, providers, brandProfile, engineConnections, mcpTokens, mcpEndpoint, engineStorageReady, notice }: { workspace: Workspace; email: string; role: string; projects: Project[]; projectsError: boolean; jobs: Job[]; jobsError: boolean; capabilities: EngineCapability[]; engineLive: boolean; providers: ProviderConnection[]; brandProfile: BrandProfile | null; engineConnections: EngineConnection[]; mcpTokens: McpToken[]; mcpEndpoint: string; engineStorageReady: boolean; notice?: string }) {
+function CreatorDesk({ workspace, email, role, projects, projectsError, jobs, jobsError, workerReady, workerConfigured, providers, brandProfile, notice }: { workspace: Workspace; email: string; role: string; projects: Project[]; projectsError: boolean; jobs: Job[]; jobsError: boolean; workerReady: boolean; workerConfigured: boolean; providers: ProviderConnection[]; brandProfile: BrandProfile | null; notice?: string }) {
   const hasHistory = projects.length > 0 || jobs.length > 0 || projectsError || jobsError;
-  const engineStatus = engineLive
-    ? `Engine ready · ${capabilities.length} tools`
-    : !mcpEndpoint || !engineStorageReady
-      ? 'Engine setup needed'
-      : 'Engine not connected';
-  const missingEngineConfig = [
-    !mcpEndpoint ? 'NEXT_PUBLIC_MCP_ENDPOINT' : null,
-    !process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SUPABASE_SERVICE_ROLE_KEY' : null,
-    !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY ? 'STUDIO_CREDENTIAL_ENCRYPTION_KEY' : null,
-  ].filter((key): key is string => Boolean(key));
-  const clipToolAvailable = capabilities.some(capability => capability.operation_key.endsWith('openshorts_process_video'));
+  const engineStatus = workerReady ? 'Video services ready' : workerConfigured ? 'Video worker offline' : 'Video services setup needed';
+  const clipToolAvailable = workerReady;
   return <div className="studio-layout"><SideRail workspace={workspace} email={email} /><main className="desk creator-desk">
-    <header className="topline"><div><span>{workspace.name}</span><span className="crumb-divider">/</span><b>Studio</b></div><a className={`engine-status-link ${engineLive ? 'is-ready' : ''}`} href="#workspace-setup"><i />{engineStatus}<ArrowDownRight aria-hidden="true" /></a></header>
+    <header className="topline"><div><span>{workspace.name}</span><span className="crumb-divider">/</span><b>Studio</b></div><a className={`engine-status-link ${workerReady ? 'is-ready' : ''}`} href="#workspace-setup"><i />{engineStatus}<ArrowDownRight aria-hidden="true" /></a></header>
     <Notice notice={notice} />
-    {hasHistory ? <NextActionFocus projects={projects} jobs={jobs} projectsError={projectsError} jobsError={jobsError} engineLive={engineLive} /> : null}
+    {hasHistory ? <NextActionFocus projects={projects} jobs={jobs} projectsError={projectsError} jobsError={jobsError} engineLive={workerReady} /> : null}
     <div className="creator-column">
       <section id="create" className="video-brief" aria-labelledby="brief-title">
         <h1 id="brief-title">What should we make?</h1>
@@ -268,21 +232,19 @@ function CreatorDesk({ workspace, email, role, projects, projectsError, jobs, jo
           <div className="repurpose-options">
             <div className="field"><label htmlFor="target-clips">Target clips</label><select id="target-clips" name="target_clips" defaultValue="4">{[2, 3, 4, 5, 6, 8, 10].map(count => <option key={count} value={count}>{count} clips</option>)}</select></div>
             <div className="field"><label htmlFor="hook-style">Hook treatment</label><select id="hook-style" name="hook_style" defaultValue="pill"><option value="pill">Rounded pill</option><option value="classic">Classic</option><option value="dark">Dark label</option><option value="yellow">Yellow type</option><option value="outline">Outline</option></select></div>
-            <div className="field"><label htmlFor="clip-reserve">Cost reserve · USD</label><input id="clip-reserve" name="estimated_cost_usd" type="number" min="0.01" max="100" step="0.25" defaultValue="1.00" required /><small>Used for MCP cost preflight; actual model usage may differ.</small></div>
+            <div className="field"><label htmlFor="clip-reserve">Cost reserve · USD</label><input id="clip-reserve" name="estimated_cost_usd" type="number" min="0.01" max="100" step="0.25" defaultValue="1.00" required /><small>Used for worker cost preflight; actual model usage may differ.</small></div>
           </div>
           <label className="clip-rights"><input type="checkbox" name="captions" defaultChecked /><span>Burn in word-level captions and a hook line.</span></label>
           <label className="clip-rights"><input type="checkbox" name="confirm_rights" required /><span>I own this video or have permission to process it.</span></label>
-          {!engineLive ? <p className="clip-availability">Connect the OpenMontage MCP engine in <a href="#workspace-setup">Setup &amp; tools</a> to create clips.</p> : !clipToolAvailable ? <p className="clip-availability">OpenShorts is not reporting available on this engine. Check <a href="#workspace-setup">Setup &amp; tools</a>.</p> : null}
-          <button className="clip-submit" type="submit" disabled={!engineLive || !clipToolAvailable}>Create vertical clips <ArrowUpRight aria-hidden="true" /></button>
-          <small className="clip-disclosure">Creates an MCP job and may use your configured model credits. No automatic retry if the response is interrupted.</small>
+          {!clipToolAvailable ? <p className="clip-availability">Video services are offline. Check <a href="#workspace-setup">Setup &amp; tools</a>.</p> : null}
+          <button className="clip-submit" type="submit" disabled={!clipToolAvailable}>Create vertical clips <ArrowUpRight aria-hidden="true" /></button>
+          <small className="clip-disclosure">Creates a worker job and may use your configured model credits. No automatic retry if the response is interrupted.</small>
         </form>
       </section>
       <section className="recent projects-section" id="projects" aria-labelledby="projects-title"><div className="recent-head"><div><h2 id="projects-title">Your projects</h2></div><span className="project-total">{projectsError ? 'UNAVAILABLE' : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}</span></div><ProjectList workspaceId={workspace.id} projects={projects} unavailable={projectsError} /></section>
-      <details className="workspace-tools" id="workspace-setup"><summary><span>Workspace setup &amp; tools</span><small>Engine connection, provider access &amp; activity</small></summary>
+      <details className="workspace-tools" id="workspace-setup"><summary><span>Workspace setup &amp; tools</span><small>Video services, provider access &amp; activity</small></summary>
         <div className="workspace-tools-content">
-          {!engineLive ? <p className="engine-setup-note"><strong>{engineStatus}.</strong> Add {missingEngineConfig.map((key, index) => <span key={key}>{index ? (index === missingEngineConfig.length - 1 ? ' and ' : ', ') : ''}<code>{key}</code></span>)} to the Studio server environment, then restart it. The endpoint must be a reachable HTTPS MCP server.</p> : null}
-          <McpAccess workspaceId={workspace.id} role={role} endpoint={mcpEndpoint} tokens={mcpTokens} />
-          <ConnectEngine workspaceId={workspace.id} role={role} endpoint={mcpEndpoint} connections={engineConnections} storageReady={engineStorageReady} />
+          {!workerReady ? <p className="engine-setup-note"><strong>{engineStatus}.</strong> The Studio administrator must configure the private worker API URL and start the Mac mini worker.</p> : null}
           <JobActivity workspaceId={workspace.id} projects={projects.map(({ id, title }) => ({ id, title }))} initialJobs={jobs} initialUnavailable={jobsError} />
           <BrandProfilePanel workspace={workspace} role={role} profile={brandProfile} />
           <ProviderPanel workspace={workspace} role={role} providers={providers} />
@@ -293,10 +255,22 @@ function CreatorDesk({ workspace, email, role, projects, projectsError, jobs, jo
   </main></div>;
 }
 
+async function workerHealth(): Promise<{ configured: boolean; ready: boolean }> {
+  const baseUrl = process.env.STUDIO_WORKER_API_URL;
+  if (!baseUrl) return { configured: false, ready: false };
+  try {
+    const response = await fetch(new URL('/healthz', baseUrl), { cache: 'no-store', signal: AbortSignal.timeout(2500) });
+    if (!response.ok) return { configured: true, ready: false };
+    const payload = await response.json() as { service?: string; api_version?: number; ok?: boolean };
+    return { configured: true, ready: payload.ok === true && payload.service === 'openmontage-studio-api' && payload.api_version === 1 };
+  } catch {
+    return { configured: true, ready: false };
+  }
+}
+
 export default async function Home({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
   const params = await searchParams;
-  const mcpEndpoint = publicMcpEndpoint(process.env.NEXT_PUBLIC_MCP_ENDPOINT);
-  const engineStorageReady = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY);
+  const worker = await workerHealth();
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) return <SetUpSupabase />;
 
   const supabase = await createClient();
@@ -331,29 +305,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ n
     .order('updated_at', { ascending: false })
     .limit(10);
 
-  const { data: engineRows } = await supabase
-    .from('engine_connections')
-    .select('id,label,status,last_seen_at')
-    .eq('workspace_id', workspace.id);
-  const engineConnections = ((engineRows || []) as EngineConnection[]).sort((a, b) =>
-    (b.last_seen_at || '').localeCompare(a.last_seen_at || ''),
-  );
-  const liveEngines = ((engineRows || []) as EngineConnection[]).filter(engine =>
-    engine.status === 'connected',
-  );
-  let capabilities: EngineCapability[] = [];
-  if (liveEngines.length) {
-    const { data: capabilityRows } = await supabase
-      .from('engine_capabilities')
-      .select('id,operation_key,display_name,description,pipeline_stage,runtime,estimated_cost_usd')
-      .eq('workspace_id', workspace.id)
-      .eq('available', true)
-      .in('connection_id', liveEngines.map(engine => engine.id))
-      .order('pipeline_stage', { ascending: true })
-      .order('display_name', { ascending: true });
-    capabilities = (capabilityRows || []) as EngineCapability[];
-  }
-
   const { data: providerRows } = await supabase.from('provider_connections')
     .select('id,provider,label,credential_hint,status')
     .eq('workspace_id', workspace.id)
@@ -362,18 +313,5 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ n
     .select('brand_name,audience,voice,visual_direction,avoid_terms,color_palette')
     .eq('workspace_id', workspace.id).maybeSingle();
 
-  let mcpTokens: McpToken[] = [];
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-    });
-    const { data: tokenRows } = await admin.from('workspace_mcp_tokens')
-      .select('id,label,scopes,created_at,expires_at,revoked_at,last_used_at')
-      .eq('workspace_id', workspace.id)
-      .not('label', 'like', 'studio-engine:%')
-      .order('created_at', { ascending: false });
-    mcpTokens = (tokenRows || []) as McpToken[];
-  }
-
-  return <CreatorDesk workspace={workspace} email={String(claims.email || '')} role={activeMembership?.role || 'reviewer'} projects={(projects || []) as Project[]} projectsError={Boolean(projectsError)} jobs={(jobs || []) as Job[]} jobsError={Boolean(jobsError)} capabilities={capabilities} engineLive={liveEngines.length > 0} providers={(providerRows || []) as ProviderConnection[]} brandProfile={(brandProfileRow || null) as BrandProfile | null} engineConnections={engineConnections} mcpTokens={mcpTokens} mcpEndpoint={mcpEndpoint} engineStorageReady={engineStorageReady} notice={projectsError ? 'project-load-failed' : params.notice} />;
+  return <CreatorDesk workspace={workspace} email={String(claims.email || '')} role={activeMembership?.role || 'reviewer'} projects={(projects || []) as Project[]} projectsError={Boolean(projectsError)} jobs={(jobs || []) as Job[]} jobsError={Boolean(jobsError)} workerReady={worker.ready} workerConfigured={worker.configured} providers={(providerRows || []) as ProviderConnection[]} brandProfile={(brandProfileRow || null) as BrandProfile | null} notice={projectsError ? 'project-load-failed' : params.notice} />;
 }

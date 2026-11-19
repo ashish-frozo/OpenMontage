@@ -50,7 +50,7 @@ class _OpenShorts(BaseTool):
             raise ValueError('estimated_cost_usd must be finite and nonnegative')
         return value
 
-    def execute(self, inputs):
+    def execute(self, inputs, *, api_key=None):
         jsonschema.validate(inputs, self.input_schema)
         self.estimate_cost(inputs)
         params = {k: v for k, v in inputs.items() if k != 'estimated_cost_usd'}
@@ -60,7 +60,7 @@ class _OpenShorts(BaseTool):
                 raise ValueError('Use either vertical_layout or framing, not both')
             params['framing'] = {'fill': 'track', 'fit': 'full', 'auto': 'auto'}[vertical_layout]
         headers = {}
-        key = os.environ.get('OPENSHORTS_API_KEY', '').strip()
+        key = (api_key if api_key is not None else os.environ.get('OPENSHORTS_API_KEY', '')).strip()
         if key:
             headers['Authorization'] = 'Bearer ' + key
         try:

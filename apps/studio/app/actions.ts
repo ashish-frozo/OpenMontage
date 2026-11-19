@@ -1,17 +1,21 @@
 'use server';
 
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { isIP } from 'node:net';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
-import { decryptCredential, encryptCredential } from '@/lib/credentials';
-import { capabilityStage, connectMcpClient, listMcpTools, type McpClient } from '@/lib/mcp-client';
+import { encryptCredential } from '@/lib/credentials';
+import { connectStudioApi, type StudioApiClient } from '@/lib/studio-api-client';
 import { getStylePreset } from './style-presets';
 
 function configured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+}
+
+function supabaseSecretKey() {
+  return process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 }
 
 function siteUrl() {
@@ -22,42 +26,13 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
 
-async function studioMcpClient(workspaceId: string): Promise<McpClient> {
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!serviceRoleKey || !supabaseUrl) throw new Error('Secure Studio engine access is not configured on this server.');
-  const admin = createServiceClient(supabaseUrl, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-  const { data: connection, error: connectionError } = await admin.from('engine_connections')
-    .select('id,endpoint_url,mcp_token_id,last_seen_at')
-    .eq('workspace_id', workspaceId).eq('status', 'connected')
-    .order('last_seen_at', { ascending: false }).limit(1).maybeSingle();
-  if (connectionError || !connection?.mcp_token_id) throw new Error('Connect an OpenMontage MCP engine in Studio first.');
-  const { data: tokenRow, error: tokenError } = await admin.from('workspace_mcp_tokens')
-    .select('expires_at,revoked_at').eq('id', connection.mcp_token_id).eq('workspace_id', workspaceId).maybeSingle();
-  if (tokenError || !tokenRow || tokenRow.revoked_at || Date.parse(tokenRow.expires_at) <= Date.now()) {
-    throw new Error('The Studio engine token has expired or been revoked. Reconnect the engine.');
-  }
-  const { data: secretRow, error: secretError } = await admin.from('engine_secrets')
-    .select('ciphertext,key_version').eq('connection_id', connection.id).eq('workspace_id', workspaceId).maybeSingle();
-  if (secretError || !secretRow || typeof secretRow.ciphertext !== 'string' || !secretRow.ciphertext.startsWith('\\x')) {
-    throw new Error('The encrypted Studio engine token is unavailable. Disconnect and reconnect the engine.');
-  }
-  let ciphertext: Buffer;
-  try {
-    ciphertext = Buffer.from(secretRow.ciphertext.slice(2), 'hex');
-    if (ciphertext.length < 29 || ciphertext.toString('hex') !== secretRow.ciphertext.slice(2).toLowerCase()) throw new Error();
-  } catch {
-    throw new Error('The encrypted Studio engine token has an invalid format.');
-  }
-  let token: string;
-  try {
-    token = decryptCredential(ciphertext, String(secretRow.key_version));
-  } catch {
-    throw new Error('Studio could not decrypt the engine token. Check its encryption key configuration.');
-  }
-  return connectMcpClient(connection.endpoint_url, token);
+async function studioApiClient(workspaceId: string): Promise<StudioApiClient> {
+  const endpoint = process.env.STUDIO_WORKER_API_URL;
+  if (!endpoint) throw new Error('Studio video services are not configured yet.');
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Sign in again before starting this operation.');
+  return connectStudioApi(endpoint, session.access_token, workspaceId);
 }
 
 export async function sendSignInLink(formData: FormData) {
@@ -182,7 +157,7 @@ export async function startClipFromUrl(formData: FormData) {
   if (!Number.isInteger(targetClips) || targetClips < 1 || targetClips > 15 || !['pill', 'classic', 'dark', 'yellow', 'red', 'outline', 'outline_yellow'].includes(hookStyle) || !Number.isFinite(costReserve) || costReserve < 0.01 || costReserve > 100) {
     redirect('/?notice=clip-invalid-options#repurpose');
   }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY) redirect('/?notice=engine-storage-unavailable#repurpose');
+  if (!process.env.STUDIO_WORKER_API_URL) redirect('/?notice=worker-api-unavailable#repurpose');
 
   const userClient = await createClient();
   const { data: claimsData } = await userClient.auth.getClaims();
@@ -194,7 +169,7 @@ export async function startClipFromUrl(formData: FormData) {
 
   let uncertainSubmission = false;
   try {
-    const mcp = await studioMcpClient(workspaceId);
+    const api = await studioApiClient(workspaceId);
     const projectId = randomUUID();
     const title = `Clips from ${host}`.slice(0, 240);
     const factoryBrief = {
@@ -202,7 +177,7 @@ export async function startClipFromUrl(formData: FormData) {
       pipeline: 'openshorts-clipping', source_url: sourceUrl, target_clips: targetClips,
       output_format: 'vertical', captions, auto_hook: captions, hook_style: hookStyle,
     };
-    const operationsResponse = asRecord(await mcp.callTool('factory_operations', {
+    const operationsResponse = asRecord(await api.callOperation('factory_operations', {
       capability: 'video_clipping', query: 'openshorts_process_video', include_schemas: true,
       check_health: true, offset: 0, limit: 100,
     }));
@@ -213,7 +188,7 @@ export async function startClipFromUrl(formData: FormData) {
     if (!operation || typeof operation.operation !== 'string' || asRecord(operation.health)?.status !== 'available') {
       redirect('/?notice=clip-tool-unavailable#repurpose');
     }
-    await mcp.callTool('factory_create_project', {
+    await api.callOperation('factory_create_project', {
       project_id: projectId, title, pipeline: 'openshorts-clipping',
       config: { brief: factoryBrief, require_job_approval: true, max_job_estimate_usd: costReserve, max_project_estimate_usd: costReserve },
     });
@@ -226,7 +201,7 @@ export async function startClipFromUrl(formData: FormData) {
       target_audience: 'The original video audience', reference_material: [sourceUrl],
       metadata: { source_url: sourceUrl, rights_confirmed: true, target_clips: targetClips, output_format: 'vertical', captions, hook_style: hookStyle, estimated_cost_usd: costReserve },
     };
-    await mcp.callTool('factory_checkpoint', {
+    await api.callOperation('factory_checkpoint', {
       project_id: projectId, stage: 'idea', status: 'completed', artifacts: { brief: briefArtifact }, approval_evidence: approvalEvidence,
     });
     const requestHash = createHash('sha256').update(JSON.stringify({ projectId, sourceUrl, targetClips, hookStyle, captions, costReserve })).digest('hex').slice(0, 12);
@@ -239,13 +214,13 @@ export async function startClipFromUrl(formData: FormData) {
       }],
       alternatives: [],
     };
-    const preflight = asRecord(await mcp.callTool('factory_preflight_route', { project_id: projectId, plan: planData }));
+    const preflight = asRecord(await api.callOperation('factory_preflight_route', { project_id: projectId, plan: planData }));
     if (preflight?.ready_to_save !== true) redirect('/?notice=clip-preflight-failed#repurpose');
     const steps = Array.isArray(asRecord(preflight.preflight)?.steps) ? asRecord(preflight.preflight)?.steps as unknown[] : [];
     const preflightStep = asRecord(steps[0]);
     const preflightEstimate = Number(preflightStep?.estimated_cost_usd);
     if (!Number.isFinite(preflightEstimate) || preflightEstimate < 0 || preflightEstimate > costReserve) redirect('/?notice=clip-budget-exceeded#repurpose');
-    const saved = asRecord(await mcp.callTool('factory_save_route', { project_id: projectId, plan: planData }));
+    const saved = asRecord(await api.callOperation('factory_save_route', { project_id: projectId, plan: planData }));
     if (typeof saved?.plan_id !== 'string') redirect('/?notice=clip-preflight-failed#repurpose');
 
     const { error: insertError } = await userClient.from('projects').insert({
@@ -256,7 +231,7 @@ export async function startClipFromUrl(formData: FormData) {
     if (insertError) redirect('/?notice=clip-save-failed#repurpose');
 
     uncertainSubmission = true;
-    const submitted = asRecord(await mcp.callTool('factory_submit_job', {
+    const submitted = asRecord(await api.callOperation('factory_submit_job', {
       project_id: projectId, plan_id: saved.plan_id, step_id: 'studio_clip_source',
       idempotency_key: `studio_clips_${projectId.replaceAll('-', '')}_${requestHash}`,
       approval_evidence: `${approvalEvidence} Cost preflight passed with a USD ${costReserve.toFixed(2)} reserve.`,
@@ -274,14 +249,14 @@ export async function startClipFromUrl(formData: FormData) {
 
 export type ClipRefreshState = { message?: string; error?: string; clips?: Array<{ title: string; url: string }> };
 
-function decodeMcpPayload(value: unknown): unknown {
+function decodeApiPayload(value: unknown): unknown {
   if (typeof value === 'string') {
-    try { return decodeMcpPayload(JSON.parse(value)); } catch { return value; }
+    try { return decodeApiPayload(JSON.parse(value)); } catch { return value; }
   }
-  if (Array.isArray(value)) return value.map(decodeMcpPayload);
+  if (Array.isArray(value)) return value.map(decodeApiPayload);
   const record = asRecord(value);
   if (!record) return value;
-  return Object.fromEntries(Object.entries(record).map(([key, item]) => [key, decodeMcpPayload(item)]));
+  return Object.fromEntries(Object.entries(record).map(([key, item]) => [key, decodeApiPayload(item)]));
 }
 
 function findValueByKey(value: unknown, keys: string[], predicate: (item: unknown) => boolean): unknown {
@@ -298,7 +273,7 @@ function findValueByKey(value: unknown, keys: string[], predicate: (item: unknow
 }
 
 function findClipLinks(value: unknown): Array<{ title: string; url: string }> {
-  const payload = decodeMcpPayload(value);
+  const payload = decodeApiPayload(value);
   let rawClips: unknown;
   const visit = (item: unknown): boolean => {
     if (Array.isArray(item)) return item.some(visit);
@@ -327,7 +302,7 @@ export async function refreshStudioClips(_previous: ClipRefreshState, formData: 
   const workspaceId = String(formData.get('workspace_id') || '');
   const projectId = String(formData.get('project_id') || '');
   if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !/^[0-9a-f-]{36}$/i.test(projectId)) return { error: 'Refresh the workspace and choose a valid clip project.' };
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY) return { error: 'Secure Studio engine access is not configured.' };
+  if (!process.env.STUDIO_WORKER_API_URL) return { error: 'Video services are not configured yet.' };
   const userClient = await createClient();
   const { data: claimsData } = await userClient.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -339,16 +314,16 @@ export async function refreshStudioClips(_previous: ClipRefreshState, formData: 
   const brief = asRecord(project?.brief) || {};
   if (brief.pipeline !== 'openshorts-clipping' || typeof brief.job_id !== 'string') return { error: 'This project does not have a clip job to check.' };
   try {
-    const mcp = await studioMcpClient(workspaceId);
-    const factoryJob = asRecord(decodeMcpPayload(await mcp.callTool('factory_job_status', { project_id: projectId, job_id: brief.job_id })));
+    const api = await studioApiClient(workspaceId);
+    const factoryJob = asRecord(decodeApiPayload(await api.callOperation('factory_job_status', { project_id: projectId, job_id: brief.job_id })));
     const factoryStatus = String(factoryJob?.status || 'unknown').toLowerCase();
     if (factoryStatus !== 'completed') {
-      const message = factoryStatus === 'failed' ? 'The MCP clip request failed. Check project activity for details.' : `Clip request ${factoryStatus}. Check again after the engine finishes submitting it.`;
+      const message = factoryStatus === 'failed' ? 'The clip request failed. Check project activity for details.' : `Clip request ${factoryStatus}. Check again after the worker finishes submitting it.`;
       return { message };
     }
     const upstreamJobId = findValueByKey(factoryJob?.result, ['job_id'], item => typeof item === 'string' && item !== brief.job_id) as string | undefined;
     if (!upstreamJobId) return { message: 'OpenShorts has not returned its processing job ID yet. Check again shortly.' };
-    const statusPayload = decodeMcpPayload(await mcp.callTool('openshorts_get_job_status', { job_id: upstreamJobId }));
+    const statusPayload = decodeApiPayload(await api.callOperation('openshorts_get_job_status', { project_id: projectId, job_id: upstreamJobId }));
     const upstreamStatus = String(findValueByKey(statusPayload, ['status', 'job_status'], item => typeof item === 'string') || 'unknown').toLowerCase();
     const nextBrief = { ...brief, clip_upstream_job_id: upstreamJobId, clip_status: upstreamStatus };
     if (!['completed', 'complete', 'succeeded', 'success'].includes(upstreamStatus)) {
@@ -356,15 +331,15 @@ export async function refreshStudioClips(_previous: ClipRefreshState, formData: 
       revalidatePath('/');
       return { message: ['failed', 'error'].includes(upstreamStatus) ? `OpenShorts reports ${upstreamStatus}. Review the job before retrying.` : `OpenShorts is ${upstreamStatus}; clips are still processing.` };
     }
-    const clipPayload = await mcp.callTool('openshorts_list_clips', { job_id: upstreamJobId });
+    const clipPayload = await api.callOperation('openshorts_list_clips', { project_id: projectId, job_id: upstreamJobId });
     const clips = findClipLinks(clipPayload);
     const completedBrief = { ...nextBrief, clip_status: 'completed', clip_outputs: clips };
     await userClient.from('projects').update({ status: clips.length ? 'review' : project?.status || 'in_progress', brief: completedBrief })
       .eq('workspace_id', workspaceId).eq('id', projectId);
     revalidatePath('/');
-    return clips.length ? { message: `${clips.length} clips are ready for review.`, clips } : { message: 'OpenShorts finished, but Studio could not find download links in the response. Check the MCP project output.' };
+    return clips.length ? { message: `${clips.length} clips are ready for review.`, clips } : { message: 'OpenShorts finished, but Studio could not find download links in the response. Check the worker project output.' };
   } catch (error) {
-    return { error: `Could not refresh clip results: ${(error instanceof Error ? error.message : 'MCP error').slice(0, 260)}` };
+    return { error: `Could not refresh clip results: ${(error instanceof Error ? error.message : 'worker API error').slice(0, 260)}` };
   }
 }
 
@@ -375,9 +350,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
   const workspaceId = String(formData.get('workspace_id') || '');
   const projectId = String(formData.get('project_id') || '');
   if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !/^[0-9a-f-]{36}$/i.test(projectId)) return { error: 'Refresh the workspace and choose a valid project.' };
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY) {
-    return { error: 'Secure Studio engine access is not configured on this server.' };
-  }
+  if (!process.env.STUDIO_WORKER_API_URL) return { error: 'Video services are not configured yet.' };
 
   const userClient = await createClient();
   const { data: claimsData } = await userClient.auth.getClaims();
@@ -398,7 +371,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
   if (!['brief', 'research'].includes(project.status)) return { error: 'Research can only start from a saved brief. Review the current project state first.' };
 
   try {
-    const mcp = await studioMcpClient(workspaceId);
+    const api = await studioApiClient(workspaceId);
     const pipeline = typeof brief.pipeline === 'string' ? brief.pipeline : '';
     if (!pipeline) return { error: 'This project brief is missing its production pipeline. Save a new brief and try again.' };
     const factoryBrief = {
@@ -416,7 +389,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
 
     let projectExists = false;
     for (let offset = 0; offset <= 4_900; offset += 100) {
-      const listing = asRecord(await mcp.callTool('factory_projects', { offset, limit: 100 }));
+      const listing = asRecord(await api.callOperation('factory_projects', { offset, limit: 100 }));
       const items = Array.isArray(listing?.items) ? listing.items : [];
       if (items.some(item => asRecord(item)?.project_id === projectId)) {
         projectExists = true;
@@ -425,7 +398,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
       if (typeof listing?.next_offset !== 'number') break;
     }
     if (!projectExists) {
-      await mcp.callTool('factory_create_project', {
+      await api.callOperation('factory_create_project', {
         project_id: projectId,
         title: project.title,
         pipeline,
@@ -438,26 +411,26 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
     const query = queryTerms.slice(0, 500);
     const briefFingerprint = createHash('sha256').update(JSON.stringify({ projectId, factoryBrief, query })).digest('hex').slice(0, 12);
     const routeRequest = `OpenMontage Studio research ${briefFingerprint}`;
-    const routeList = asRecord(await mcp.callTool('factory_routes', { project_id: projectId, offset: 0, limit: 100 }));
+    const routeList = asRecord(await api.callOperation('factory_routes', { project_id: projectId, offset: 0, limit: 100 }));
     const existing = (Array.isArray(routeList?.items) ? routeList.items : [])
       .map(asRecord).find(item => item?.request === routeRequest);
 
     let plan: Record<string, unknown>;
     if (existing && typeof existing.plan_id === 'string') {
-      const saved = asRecord(await mcp.callTool('factory_routes', { project_id: projectId, plan_id: existing.plan_id }));
+      const saved = asRecord(await api.callOperation('factory_routes', { project_id: projectId, plan_id: existing.plan_id }));
       const steps = Array.isArray(saved?.steps) ? saved.steps : [];
       const savedStep = steps.map(asRecord).find(step => step?.id === 'studio_research_search');
       const savedParams = asRecord(savedStep?.params);
       if (!savedStep || typeof savedStep.operation !== 'string' || !savedStep.operation.endsWith(':research_search')
         || savedParams?.provider !== 'wikipedia' || savedParams.limit !== 5
         || Number(savedStep.estimated_cost_usd) !== 0) {
-        return { error: 'The saved research route is incomplete. Inspect the route in an MCP client before retrying.' };
+        return { error: 'The saved research route is incomplete. Review the project before retrying.' };
       }
       // factory_routes(plan_id=...) returns the stored plan body, not the
       // submit envelope; preserve the id from the paginated route listing.
       plan = { project_id: projectId, plan_id: existing.plan_id, step_id: 'studio_research_search' };
     } else {
-      const operationsResponse = asRecord(await mcp.callTool('factory_operations', {
+      const operationsResponse = asRecord(await api.callOperation('factory_operations', {
         capability: 'research', query: 'research_search', include_schemas: true, check_health: true, offset: 0, limit: 100,
       }));
       const operationItems = Array.isArray(operationsResponse?.items) ? operationsResponse.items : [];
@@ -465,7 +438,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
         item?.native_tool === 'research_search' || String(item?.operation || '').endsWith(':research_search'),
       );
       if (!operation || typeof operation.operation !== 'string' || asRecord(operation.health)?.status !== 'available') {
-        return { error: 'The connected MCP does not currently report an available research_search operation.' };
+        return { error: 'The worker does not currently report an available research search operation.' };
       }
       const planData = {
         request: routeRequest,
@@ -479,7 +452,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
         }],
         alternatives: [],
       };
-      const preflight = asRecord(await mcp.callTool('factory_preflight_route', { project_id: projectId, plan: planData }));
+      const preflight = asRecord(await api.callOperation('factory_preflight_route', { project_id: projectId, plan: planData }));
       if (preflight?.ready_to_submit !== false || preflight.ready_to_save !== true) {
         return { error: 'The engine did not confirm a no-cost research preflight. No research job was submitted.' };
       }
@@ -489,7 +462,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
       if (!Number.isFinite(estimate) || estimate !== 0) {
         return { error: 'The research search is not free on this engine, so Studio stopped before submitting it.' };
       }
-      const saved = asRecord(await mcp.callTool('factory_save_route', { project_id: projectId, plan: planData }));
+      const saved = asRecord(await api.callOperation('factory_save_route', { project_id: projectId, plan: planData }));
       if (typeof saved?.plan_id !== 'string') return { error: 'The research route was validated but the engine did not save it.' };
       plan = { project_id: projectId, plan_id: saved.plan_id, step_id: 'studio_research_search' };
     }
@@ -498,14 +471,14 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
     const stepId = typeof plan.step_id === 'string' ? plan.step_id : 'studio_research_search';
     if (!planId) return { error: 'The saved research route is missing its plan identifier.' };
     const idempotencyKey = `studio_research_${projectId.replaceAll('-', '')}_${briefFingerprint}`;
-    const submitted = asRecord(await mcp.callTool('factory_submit_job', {
+    const submitted = asRecord(await api.callOperation('factory_submit_job', {
       project_id: projectId,
       plan_id: planId,
       step_id: stepId,
       idempotency_key: idempotencyKey,
       approval_evidence: 'Creator clicked “Start free research” in OpenMontage Studio. Preflight confirmed a $0.00 Wikipedia source search.',
     }));
-    if (!submitted || typeof submitted.job_id !== 'string') return { error: 'The engine did not return a job identifier. Check the MCP project before retrying.' };
+    if (!submitted || typeof submitted.job_id !== 'string') return { error: 'The worker did not return a job identifier. Check project activity before retrying.' };
 
     const nextBrief = { ...brief, status: 'research_in_progress', research_job_id: submitted.job_id };
     await userClient.from('projects').update({ status: 'research', brief: nextBrief })
@@ -513,7 +486,7 @@ export async function startStudioResearch(_previous: StartResearchState, formDat
     revalidatePath('/');
     return { submitted: `Research ${submitted.status === 'completed' ? 'already completed' : 'started'} · $0.00 · job ${submitted.job_id.slice(0, 8)}` };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unexpected MCP error';
+    const message = error instanceof Error ? error.message : 'Unexpected worker API error';
     return { error: `Research did not start: ${message.slice(0, 360)}` };
   }
 }
@@ -568,8 +541,8 @@ export async function loadStudioResearchResult(_previous: ResearchResultState, f
       return { error: `The research job is ${String(job.status).replaceAll('_', ' ')}. Review production activity for details; Studio will not retry it automatically.` };
     }
 
-    const mcp = await studioMcpClient(workspaceId);
-    const jobResult = asRecord(await mcp.callTool('factory_job_status', {
+    const api = await studioApiClient(workspaceId);
+    const jobResult = asRecord(await api.callOperation('factory_job_status', {
       project_id: projectId, job_id: jobId, log_tail_bytes: 0,
     }));
     if (jobResult?.status !== 'completed') return { message: 'The engine has not marked this research run complete yet. Check again shortly.' };
@@ -625,8 +598,8 @@ export async function loadStudioRender(_previous: StudioRenderState, formData: F
     const { data: project, error: projectError } = await userClient.from('projects')
       .select('id,status').eq('workspace_id', workspaceId).eq('id', projectId).maybeSingle();
     if (projectError || !project) return { error: 'That project is not available in this workspace.' };
-    const mcp = await studioMcpClient(workspaceId);
-    const output = asRecord(await mcp.callTool('factory_outputs', { project_id: projectId, offset: 0, limit: 100 }));
+    const api = await studioApiClient(workspaceId);
+    const output = asRecord(await api.callOperation('factory_outputs', { project_id: projectId, offset: 0, limit: 100 }));
     const items = Array.isArray(output?.items) ? output.items : [];
     const marker = `/${projectId}/renders/`;
     const candidate = items.map(asRecord).find((item) => {
@@ -641,16 +614,16 @@ export async function loadStudioRender(_previous: StudioRenderState, formData: F
     if (!candidate || typeof candidate.path !== 'string') return { message: 'No finished video render is available in this project yet.' };
     const markerIndex = candidate.path.lastIndexOf(marker);
     const relativePath = `renders/${candidate.path.slice(markerIndex + marker.length)}`;
-    const media = asRecord(await mcp.callTool('factory_export_media', {
+    const media = asRecord(await api.callOperation('factory_export_media', {
       project_id: projectId, relative_path: relativePath, mode: 'link',
     }));
     if (typeof media?.download_url !== 'string') {
-      return { error: 'The connected MCP host does not have signed browser media delivery configured yet.' };
+      return { error: 'The video worker did not return a signed media link.' };
     }
     const link = new URL(media.download_url);
-    const expectedEndpoint = new URL(process.env.NEXT_PUBLIC_MCP_ENDPOINT || '');
+    const expectedEndpoint = new URL(process.env.STUDIO_WORKER_API_URL || '');
     if (link.protocol !== 'https:' || link.origin !== expectedEndpoint.origin || link.username || link.password) {
-      return { error: 'The render link did not match the configured secure MCP host.' };
+      return { error: 'The render link did not match the configured video worker.' };
     }
     return {
       render: {
@@ -704,142 +677,6 @@ export async function saveBrandProfile(formData: FormData) {
   redirect('/?notice=brand-saved#brand');
 }
 
-export type EngineConnectionActionState = { connected?: string; error?: string };
-
-export async function connectStudioEngine(_previous: EngineConnectionActionState, formData: FormData): Promise<EngineConnectionActionState> {
-  if (!configured()) return { error: 'Connect Supabase before connecting an engine.' };
-  const workspaceId = String(formData.get('workspace_id') || '');
-  const label = String(formData.get('label') || '').trim();
-  const endpoint = process.env.NEXT_PUBLIC_MCP_ENDPOINT || '';
-  if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !label || label.length > 120) return { error: 'Enter an engine label up to 120 characters.' };
-  if (!endpoint) return { error: 'Set NEXT_PUBLIC_MCP_ENDPOINT in the Studio server environment, then reconnect.' };
-  try {
-    const parsedEndpoint = new URL(endpoint);
-    const secure = parsedEndpoint.protocol === 'https:' || (parsedEndpoint.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(parsedEndpoint.hostname));
-    if (!secure || parsedEndpoint.username || parsedEndpoint.password || parsedEndpoint.search || parsedEndpoint.hash) {
-      return { error: 'Configure an HTTPS MCP URL without credentials or query parameters. HTTP is allowed only for localhost development.' };
-    }
-  } catch {
-    return { error: 'Set NEXT_PUBLIC_MCP_ENDPOINT to a valid MCP URL before connecting.' };
-  }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY) {
-    return { error: 'Secure engine connection storage is not configured on this Studio server.' };
-  }
-
-  const userClient = await createClient();
-  const { data: claimsData } = await userClient.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return { error: 'Sign in again to connect an engine.' };
-  const { data: membership } = await userClient.from('workspace_members').select('role')
-    .eq('workspace_id', workspaceId).eq('user_id', userId).maybeSingle();
-  if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return { error: 'Only workspace owners and admins can connect an engine.' };
-  }
-
-  let encrypted;
-  try {
-    const token = `om_live_${randomBytes(32).toString('base64url')}`;
-    const tokenHash = createHash('sha256').update(token, 'utf8').digest('hex');
-    encrypted = encryptCredential(token);
-    const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-    });
-    const { data: connectionId, error } = await admin.rpc('store_studio_engine_connection', {
-      target_workspace_id: workspaceId,
-      target_label: label,
-      target_endpoint_url: endpoint,
-      actor_id: userId,
-      presented_hash: `\\x${tokenHash}`,
-      token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-      encrypted_payload: `\\x${encrypted.ciphertext.toString('hex')}`,
-      encryption_version: encrypted.keyVersion,
-    });
-    if (error || typeof connectionId !== 'string') return { error: 'Studio could not store the encrypted engine connection. Apply the latest Supabase migration and try again.' };
-
-    let tools;
-    try {
-      tools = await listMcpTools(endpoint, token);
-    } catch {
-      await admin.rpc('mark_studio_engine_offline', { target_connection_id: connectionId });
-      revalidatePath('/');
-      return { error: 'Studio saved the connection, but could not complete the MCP handshake. Check the configured endpoint and server availability.' };
-    }
-    let schemaBudget = 500_000;
-    const capabilities = tools.map(tool => {
-      let schema: Record<string, unknown> = {};
-      if (tool.inputSchema) {
-        const serialized = JSON.stringify(tool.inputSchema);
-        if (serialized.length <= Math.min(8000, schemaBudget)) {
-          schema = tool.inputSchema;
-          schemaBudget -= serialized.length;
-        }
-      }
-      return {
-        operation_key: tool.name,
-        display_name: tool.name.replace(/^factory_/, '').replaceAll('_', ' '),
-        description: (tool.description || '').slice(0, 600),
-        pipeline_stage: capabilityStage(tool.name),
-        input_schema: schema,
-      };
-    });
-    const { error: syncError } = await admin.rpc('sync_studio_engine_capabilities', {
-      target_connection_id: connectionId,
-      target_capabilities: capabilities,
-    });
-    if (syncError) {
-      await admin.rpc('mark_studio_engine_offline', { target_connection_id: connectionId });
-      revalidatePath('/');
-      return { error: 'The MCP responded, but Studio could not save its tool catalog. Check the latest Supabase migration.' };
-    }
-    const { data: olderConnections } = await admin.from('engine_connections').select('mcp_token_id')
-      .eq('workspace_id', workspaceId).eq('label', label).neq('id', connectionId).neq('status', 'revoked');
-    let oldTokenCleanupFailed = false;
-    for (const oldConnection of olderConnections || []) {
-      if (!oldConnection.mcp_token_id) continue;
-      const { error: revokeError } = await admin.rpc('revoke_workspace_mcp_token', {
-        target_workspace_id: workspaceId,
-        target_token_id: oldConnection.mcp_token_id,
-        actor_id: userId,
-      });
-      if (revokeError) oldTokenCleanupFailed = true;
-    }
-    revalidatePath('/');
-    return { connected: `Connected. Studio discovered ${tools.length} MCP tools.${oldTokenCleanupFailed ? ' A previous token could not be retired; disconnect its old connection below.' : ''}` };
-  } catch {
-    return { error: 'Studio could not establish a secure engine connection. Check its server configuration and try again.' };
-  }
-}
-
-export async function revokeStudioEngineConnection(formData: FormData) {
-  if (!configured()) redirect('/?notice=configure-supabase');
-  const workspaceId = String(formData.get('workspace_id') || '');
-  const connectionId = String(formData.get('connection_id') || '');
-  if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !/^[0-9a-f-]{36}$/i.test(connectionId)) redirect('/?notice=invalid-workspace#engine');
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) redirect('/?notice=engine-storage-unavailable#engine');
-  const userClient = await createClient();
-  const { data: claimsData } = await userClient.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) redirect('/?notice=sign-in');
-  const { data: membership } = await userClient.from('workspace_members').select('role')
-    .eq('workspace_id', workspaceId).eq('user_id', userId).maybeSingle();
-  if (!membership || !['owner', 'admin'].includes(membership.role)) redirect('/?notice=engine-admin-required#engine');
-  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-  const { data: connection } = await admin.from('engine_connections').select('mcp_token_id')
-    .eq('workspace_id', workspaceId).eq('id', connectionId).maybeSingle();
-  if (!connection?.mcp_token_id) redirect('/?notice=engine-not-found#engine');
-  const { data: revoked, error } = await admin.rpc('revoke_workspace_mcp_token', {
-    target_workspace_id: workspaceId,
-    target_token_id: connection.mcp_token_id,
-    actor_id: userId,
-  });
-  if (error) redirect('/?notice=engine-revoke-failed#engine');
-  if (!revoked) redirect('/?notice=engine-already-revoked#engine');
-  revalidatePath('/');
-  redirect('/?notice=engine-revoked#engine');
-}
-
 export async function saveProviderCredential(formData: FormData) {
   if (!configured()) redirect('/?notice=configure-supabase');
   const workspaceId = String(formData.get('workspace_id') || '');
@@ -879,7 +716,8 @@ export async function saveProviderCredential(formData: FormData) {
       redirect('/?notice=invalid-provider-credential');
     }
   }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY) {
+  const secretKey = supabaseSecretKey();
+  if (!secretKey || !process.env.STUDIO_CREDENTIAL_ENCRYPTION_KEY) {
     redirect('/?notice=credential-storage-unavailable');
   }
 
@@ -892,7 +730,7 @@ export async function saveProviderCredential(formData: FormData) {
   if (!membership || !['owner', 'admin'].includes(membership.role)) redirect('/?notice=provider-admin-required');
 
   const encrypted = encryptCredential(credentialValue);
-  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
   const { error } = await admin.rpc('store_provider_credential', {
@@ -916,7 +754,8 @@ export async function revokeProviderCredential(formData: FormData) {
   if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !/^[0-9a-f-]{36}$/i.test(connectionId)) {
     redirect('/?notice=invalid-workspace');
   }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) redirect('/?notice=credential-storage-unavailable');
+  const secretKey = supabaseSecretKey();
+  if (!secretKey) redirect('/?notice=credential-storage-unavailable');
 
   const userClient = await createClient();
   const { data: claimsData } = await userClient.auth.getClaims();
@@ -926,7 +765,7 @@ export async function revokeProviderCredential(formData: FormData) {
     .eq('workspace_id', workspaceId).eq('user_id', userId).maybeSingle();
   if (!membership || !['owner', 'admin'].includes(membership.role)) redirect('/?notice=provider-admin-required');
 
-  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
   const { data: revoked, error } = await admin.rpc('revoke_provider_credential', {
@@ -938,72 +777,4 @@ export async function revokeProviderCredential(formData: FormData) {
   if (!revoked) redirect('/?notice=provider-already-revoked#providers');
   revalidatePath('/');
   redirect('/?notice=provider-revoked#providers');
-}
-
-export type McpTokenActionState = { token?: string; error?: string };
-
-export async function createWorkspaceMcpToken(_previous: McpTokenActionState, formData: FormData): Promise<McpTokenActionState> {
-  if (!configured()) return { error: 'Connect Supabase before creating a workspace token.' };
-  const workspaceId = String(formData.get('workspace_id') || '');
-  const label = String(formData.get('label') || '').trim();
-  const accessLevel = String(formData.get('access_level') || 'read-write');
-  if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !label || label.length > 120) {
-    return { error: 'Enter a token label up to 120 characters.' };
-  }
-  if (!['read-only', 'read-write'].includes(accessLevel)) return { error: 'Choose read-only or production access.' };
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { error: 'Secure token management is not configured for this deployment.' };
-
-  const userClient = await createClient();
-  const { data: claimsData } = await userClient.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return { error: 'Sign in again to create a workspace token.' };
-  const { data: membership } = await userClient.from('workspace_members').select('role')
-    .eq('workspace_id', workspaceId).eq('user_id', userId).maybeSingle();
-  if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return { error: 'Only workspace owners and admins can create MCP access tokens.' };
-  }
-
-  const token = `om_live_${randomBytes(32).toString('base64url')}`;
-  const tokenHash = createHash('sha256').update(token, 'utf8').digest('hex');
-  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-  const { error } = await admin.rpc('create_workspace_mcp_token', {
-    target_workspace_id: workspaceId,
-    target_label: label,
-    presented_hash: `\\x${tokenHash}`,
-    token_scopes: accessLevel === 'read-only' ? ['mcp:read'] : ['mcp:read', 'mcp:write'],
-    target_expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-    actor_id: userId,
-  });
-  if (error) return { error: 'Could not create the token. Check the Studio migration and try again.' };
-  return { token };
-}
-
-export async function revokeWorkspaceMcpToken(formData: FormData) {
-  if (!configured()) redirect('/?notice=configure-supabase');
-  const workspaceId = String(formData.get('workspace_id') || '');
-  const tokenId = String(formData.get('token_id') || '');
-  if (!/^[0-9a-f-]{36}$/i.test(workspaceId) || !/^[0-9a-f-]{36}$/i.test(tokenId)) redirect('/?notice=invalid-workspace');
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) redirect('/?notice=credential-storage-unavailable#mcp-access');
-  const userClient = await createClient();
-  const { data: claimsData } = await userClient.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) redirect('/?notice=sign-in');
-  const { data: membership } = await userClient.from('workspace_members').select('role')
-    .eq('workspace_id', workspaceId).eq('user_id', userId).maybeSingle();
-  if (!membership || !['owner', 'admin'].includes(membership.role)) redirect('/?notice=provider-admin-required#mcp-access');
-
-  const admin = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-  const { data: revoked, error } = await admin.rpc('revoke_workspace_mcp_token', {
-    target_workspace_id: workspaceId,
-    target_token_id: tokenId,
-    actor_id: userId,
-  });
-  if (error) redirect('/?notice=mcp-token-revoke-failed#mcp-access');
-  if (!revoked) redirect('/?notice=mcp-token-already-revoked#mcp-access');
-  revalidatePath('/');
-  redirect('/?notice=mcp-token-revoked#mcp-access');
 }

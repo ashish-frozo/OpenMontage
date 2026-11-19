@@ -15,7 +15,11 @@ install Python, Node, FFmpeg, or a local MCP process.
 ## Product boundary
 
 - OpenMontage remains an AGPL self-hostable engine and MCP server.
-- Studio is the hosted control plane and creator-facing web application.
+- Studio is the hosted control plane and creator-facing web application. Its
+  workflows use server-side REST APIs and do not require an MCP connection.
+- The open-source MCP is deployed independently for external AI clients. Studio
+  and MCP can share production libraries without depending on each other's
+  transport or uptime.
 - Customers can connect their own generation-provider credentials in the
   initial paid pilot. Studio records estimated and actual usage separately;
   model charges go to the customer's provider account.
@@ -27,14 +31,16 @@ install Python, Node, FFmpeg, or a local MCP process.
 
 ## System shape
 
-    Web Studio ── Supabase Auth ── Control API / MCP
-         │                             │
-         ├── Postgres + RLS             ├── operation registry and pipeline rules
-         ├── private object storage     ├── durable job dispatch
-         └── signed media links         └── isolated rendering workers
-                                              │
-                                  Remotion / HyperFrames / FFmpeg
-                                  configured generation providers
+    Web Studio (Vercel) ── Supabase Auth + RLS
+         │
+         ├── Studio server actions and API routes
+         ├── Postgres + private object storage
+         └── authenticated REST worker API (Mac mini)
+                    ├── operation registry and pipeline rules
+                    ├── durable job dispatch
+                    └── Remotion / HyperFrames / FFmpeg + providers
+
+    External AI clients ── Open-source OpenMontage MCP (separate deployment)
 
 ### Control plane
 
@@ -44,11 +50,10 @@ stack is Next.js App Router on Vercel with Supabase. Every customer-owned row
 has a workspace_id; policies use membership checks. The browser never receives
 the Supabase service-role key or provider credentials.
 
-MCP authentication must resolve a verified user subject to workspace
+The Studio REST API validates a Supabase user session and current workspace
 membership on every request. A caller-supplied project ID or workspace ID is
-only a selector; it is never proof of access. Keep the existing owner-allowlist
-mode for self-hosted installations, and add a separate workspace-aware hosted
-mode.
+only a selector; it is never proof of access. The separate open-source MCP
+keeps its own self-hosted authentication modes.
 
 ### Data and media plane
 
@@ -107,7 +112,7 @@ and a built-in model marketplace outside the first paid pilot.
 ## Implementation order
 
 1. Supabase schema, RLS, workspace creation, and tenant-safe media paths.
-2. Hosted auth and workspace-aware MCP/API authorization.
+2. Hosted auth and workspace-aware REST API authorization.
 3. Durable queue and worker isolation, retaining the current self-hosted runner.
 4. Creator-facing Studio UI and end-to-end draft/review/export flow.
 5. Provider connection management, billing, usage limits, observability, and
@@ -115,65 +120,22 @@ and a built-in model marketplace outside the first paid pilot.
 
 ## Current implementation status
 
-The repository now contains a local SaaS foundation: the Supabase migration
-defines workspaces, RLS-protected projects, engine/capability metadata,
-service-role-only job leases, progress reports and reconciliation, private media
-policies, provider-secret storage, usage events, and entitlements. The Next.js
-Studio implements email-link sign-in, workspace creation, brief storage, a
-capability-driven view, an RLS-scoped activity panel that polls only while
-visible, and an owner/admin-managed brand profile whose values are snapshotted
-into each new brief. Owners can also connect Studio to its configured MCP
-endpoint: Studio creates a workspace-scoped token, stores it encrypted for
-server use, verifies a Streamable HTTP handshake, and snapshots the returned
-tool catalog. An authorized creator can now start a free five-result Wikipedia
-search from an evergreen brief after a live MCP availability check and a
-no-cost preflight. Studio saves an immutable research route, submits it only
-after the creator clicks, and records that click as approval evidence; jobs
-remain visible through the workspace activity mirror. Workspace members can
-open a completed result and review up to five bounded HTTPS source leads. These
-snippets are discovery leads rather than verified claims. Live-news research,
-source retrieval and claim verification, script and scene-plan approval, and
-social publishing are still unfinished. From any project row, Studio can
-request a five-minute signed video preview/download link for an existing render
-from the configured MCP host. Hosted renders now replicate to a private Supabase
-Storage bucket and can be exported as signed links or bounded byte chunks after
-the worker volume is replaced. Canonical MCP checkpoints mirror their latest
-stage, status, and pending human approval into the matching Studio project. The new
-`content_factory.hosted` mode verifies those tokens, checks each project ID
-against the token workspace, and routes the existing `Factory` into a private
-workspace directory; its current single-host deployment notes are in
-`hosted-mcp.md`. Read-only MCP tokens are restricted using the registered tool
-annotations. Hosted media export now supports signed, five-minute links served
-from the private host volume, bound to a workspace and project and rechecked
-against Supabase on download. Hosted submissions now enter Supabase's `jobs`
-table through a producer-checked RPC that applies idempotency, entitlement,
-concurrency and estimate-reservation guards. The MCP server's FastMCP lifespan
-starts and stops a lease-claiming worker pool; `STUDIO_WORKER_CONCURRENCY`
-controls its process-wide worker count (default 2). SQLite remains the
-execution adapter and the self-hosted queue. Hosted results and usage
-settlement are written to Supabase. Private media is indexed by workspace and
-project in a service-role-only table; each MCP download ticket rechecks project
-ownership and falls back to a five-minute object signed URL. A storage outage
-marks replication pending while preserving the successful render result. If the
-MCP host stops during work, that job enters reconciliation and is never
-automatically retried. Fine-grained renderer progress remains open.
-Workspace owners and admins can store provider credentials through an
-AES-256-GCM server encryption boundary; a service-role-only database function
-transactionally stores encrypted bytes, safe metadata, and an audit event.
-Credential revocation erases the ciphertext and appends an audit event
-transactionally; revoked labels can be reused for a replacement key.
-The hosted MCP now resolves a submitted step to its registered tool, decrypts
-the matching workspace credential in memory, and injects it only into that
-job's worker environment. Selectors can receive credentials for their connected
-candidate providers; tools can declare alternative or multi-value credential
-shapes. Managed provider variables from the host are stripped from hosted
-workers. The Studio and MCP host must share the encryption key; explicit key
-rotation remains open.
+The repository contains the Studio Supabase schema, RLS-scoped workspace and
+project data, email-link sign-in, briefs, activity, brand profiles, and
+encrypted provider credentials. Its durable queue, worker lease and
+reconciliation logic, private media storage, workspace isolation, and local
+production tools are implemented.
 
-This is not a live SaaS deployment yet. No OpenMontage Supabase project has
-been selected or migrated, and the hosted MCP service is not deployed. Fine-
-grained progress reporting, worker process/container isolation, provider key
-rotation, invites, billing
-integration, and launch operations still need implementation. Applying
-the ordered migrations under `supabase/migrations/` to a live project is a
-separate deployment action.
+Studio is being moved from an MCP client to a first-party REST worker API. The
+Studio UI and server actions now use a REST client, and `content_factory.studio_api`
+provides user-session validation, workspace authorization, project checks,
+operation dispatch, durable workers, and signed media delivery. The worker is
+not yet installed on the Mac mini, `STUDIO_WORKER_API_URL` is not configured in
+Vercel, and this code has not yet been deployed. The standalone OpenMontage MCP
+remains a separate open-source interface; it is not a Studio dependency.
+
+Before the Studio workflow is usable end-to-end, deploy the REST worker, add
+the Supabase server key and worker URL as server-only configuration, confirm
+the required migrations are applied, and verify research, job status, rendering,
+and media export. Script and scene-plan review, richer research, worker process
+isolation, billing, invites, and launch operations remain open.

@@ -690,6 +690,16 @@ def build_server(factory=None, *, server_class=FastMCP, server_options=None, dow
     return mcp
 
 
+async def call_registered_tool(server, name: str, arguments: dict):
+    """Invoke a registered production operation in-process for first-party APIs.
+
+    The REST API and MCP adapter share the operation implementations, while
+    callers use their own transport and authentication boundary.
+    """
+    tool = server._tool_manager.get_tool(name)
+    return await tool.run(arguments, convert_result=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Content Factory MCP (local stdio transport)")
     parser.add_argument("--projects-dir", type=Path, help="Override project root; default follows OPENMONTAGE_PROJECTS_DIR")

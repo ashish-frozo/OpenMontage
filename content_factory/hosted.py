@@ -39,6 +39,7 @@ from content_factory.service import _hosted_job_environment
 
 
 _workspace_id: ContextVar[str | None] = ContextVar("openmontage_workspace_id", default=None)
+_studio_api_actor: ContextVar[dict | None] = ContextVar("openmontage_studio_api_actor", default=None)
 _WORKSPACE_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 _GOOGLE_PROVIDER_IDS = {"google", "google_tts", "google_imagen", "gemini", "gemini_omni", "veo"}
 _LOCAL_TO_STUDIO_STATUS = {
@@ -56,11 +57,12 @@ _LOCAL_TO_STUDIO_STATUS = {
 class StudioDatabase:
     def __init__(self, supabase_url: str, service_role_key: str):
         self.rest = supabase_url.rstrip("/") + "/rest/v1"
-        self.headers = {
-            "apikey": service_role_key,
-            "Authorization": f"Bearer {service_role_key}",
-            "Content-Type": "application/json",
-        }
+        self.api_key = service_role_key
+        self.headers = {"apikey": service_role_key, "Content-Type": "application/json"}
+        # Opaque Supabase Secret keys belong in apikey, not Authorization.
+        # Keep the Authorization header only for legacy JWT-based service_role.
+        if not service_role_key.startswith("sb_secret_"):
+            self.headers["Authorization"] = f"Bearer {service_role_key}"
         self.storage = supabase_url.rstrip("/") + "/storage/v1"
 
     @staticmethod
@@ -487,8 +489,15 @@ class WorkspaceFactory:
         if self.database is None:
             raise RuntimeError("Supabase-backed hosted job queue is not configured")
         workspace_id = _workspace_id.get()
-        access = get_access_token()
-        claims = access.claims if access else {}
+        api_actor = _studio_api_actor.get()
+        if api_actor is not None:
+            claims = api_actor
+        else:
+            try:
+                access = get_access_token()
+            except Exception:
+                access = None
+            claims = access.claims if access else {}
         actor_id = str(claims.get("sub", ""))
         if not workspace_id or not _WORKSPACE_UUID.fullmatch(workspace_id) or not _WORKSPACE_UUID.fullmatch(actor_id):
             raise PermissionError("A verified workspace producer token is required to submit work")
@@ -771,6 +780,13 @@ class StudioJobMirror:
     def start(self):
         if self._task is None or self._task.done():
             self._task = asyncio.create_task(self._run(), name="studio-local-job-mirror")
+
+    async def stop(self):
+        task = self._task
+        self._task = None
+        if task is not None and not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
 
     async def _run(self):
         while True:
