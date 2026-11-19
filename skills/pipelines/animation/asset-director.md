@@ -131,6 +131,20 @@ Recommended metadata keys:
 - every referenced file exists,
 - narration-led assets apply the approved voice-performance settings.
 
+## Handoff To Edit And Compose
+
+Assets is not the final-render stage. Finish the real asset work and save the
+`asset_manifest` checkpoint before moving on. The next stage is Edit, which
+produces and checkpoints `edit_decisions`; only then may the final render be
+routed through `video_compose` in Compose.
+
+Do not add `video_compose` to Assets to get around this sequence. A missing
+`motion_scene` dependency blocks that particular asset renderer only; it does
+not make Remotion unavailable when `video_compose` health reports available.
+If a Remotion composition source already exists, preserve it and include its
+actual inputs in the project artifacts. Do not render it until the project
+reaches Compose. Stage approval remains per checkpoint.
+
 ### Mid-Production Fact Verification
 
 If you encounter uncertainty during asset generation:

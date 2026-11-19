@@ -244,6 +244,8 @@ stages:
       - "Clip duration maximized (prefer 10s over 5s) to reduce API calls and cost"
       - "Use selector tools (video_selector, tts_selector, image_selector) — never call provider tools directly"
       - "Read Layer 2 skills for each tool BEFORE reading source code — skills contain usage guidance, source code is implementation detail"
+      - "Assets is not the final-render stage: checkpoint asset_manifest, then complete Edit and checkpoint edit_decisions before calling video_compose in Compose"
+      - "A missing motion_scene dependency affects that asset renderer only; check video_compose health separately and preserve existing Remotion source"
     success_criteria:
       - Schema-valid asset_manifest artifact
       - All referenced asset files exist on disk
